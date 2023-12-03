@@ -7,34 +7,37 @@ from OpenGL.GLU import *
 bottom_spaceship_x = -8
 top_spaceship_x = 8
 
-def draw_line(x1, y1, x2, y2):
+def draw_line(x1, y1, x2, y2, thickness):
+    glLineWidth(thickness)
     glBegin(GL_LINES)
     glVertex2f(x1, y1)
     glVertex2f(x2, y2)
     glEnd()
 
+thickness = 5
 def draw_spaceship(x, y, scale):
+    global thickness
     # Body
-    draw_line(x - 2 * scale, y - 1 * scale, x + 2 * scale, y - 1 * scale)
-    draw_line(x + 2 * scale, y - 1 * scale, x + 1.5 * scale, y + 1 * scale)
-    draw_line(x + 1.5 * scale, y + 1 * scale, x - 1.5 * scale, y + 1 * scale)
-    draw_line(x - 1.5 * scale, y + 1 * scale, x - 2 * scale, y - 1 * scale)
+    draw_line(x - 2 * scale, y - 1 * scale, x + 2 * scale, y - 1 * scale, thickness)
+    draw_line(x + 2 * scale, y - 1 * scale, x + 1.5 * scale, y + 1 * scale, thickness)
+    draw_line(x + 1.5 * scale, y + 1 * scale, x - 1.5 * scale, y + 1 * scale, thickness)
+    draw_line(x - 1.5 * scale, y + 1 * scale, x - 2 * scale, y - 1 * scale, thickness)
 
     # Wings
-    draw_line(x - 1.5 * scale, y - 1 * scale, x - 2.5 * scale, y - 1 * scale)
-    draw_line(x + 1.5 * scale, y - 1 * scale, x + 2.5 * scale, y - 1 * scale)
+    draw_line(x - 1.5 * scale, y - 1 * scale, x - 2.5 * scale, y - 1 * scale, thickness)
+    draw_line(x + 1.5 * scale, y - 1 * scale, x + 2.5 * scale, y - 1 * scale, thickness)
 
     # Cockpit
-    draw_line(x - 0.5 * scale, y + 1 * scale, x + 0.5 * scale, y + 1 * scale)
-    draw_line(x + 0.5 * scale, y + 1 * scale, x, y + 2 * scale)
+    draw_line(x - 0.5 * scale, y + 1 * scale, x + 0.5 * scale, y + 1 * scale, thickness)
+    draw_line(x + 0.5 * scale, y + 1 * scale, x, y + 2 * scale, thickness)
 
 def draw_bottom_spaceship():
     global bottom_spaceship_x
-    draw_spaceship(bottom_spaceship_x, -5, 0.5)
+    draw_spaceship(bottom_spaceship_x, -15, 0.5)
 
 def draw_top_spaceship():
     global top_spaceship_x
-    draw_spaceship(top_spaceship_x, 5, 0.5)
+    draw_spaceship(top_spaceship_x, -5, 0.5)
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
