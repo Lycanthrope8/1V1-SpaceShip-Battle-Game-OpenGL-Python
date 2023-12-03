@@ -3,10 +3,9 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-# Global variables to store spaceship positions and directions
+# Global variables to store spaceship positions
 bottom_spaceship_x = -8
 top_spaceship_x = 8
-top_spaceship_direction = -1  # Change direction to make the top spaceship face downward
 
 def draw_line(x1, y1, x2, y2):
     glBegin(GL_LINES)
@@ -14,24 +13,28 @@ def draw_line(x1, y1, x2, y2):
     glVertex2f(x2, y2)
     glEnd()
 
-def draw_spaceship(x, y, scale, direction):
+def draw_spaceship(x, y, scale):
     # Body
-    draw_line(x - 3 * scale, y - 1 * scale, x + 3 * scale, y - 1 * scale)
-    draw_line(x + 3 * scale, y - 1 * scale, x + 2 * scale * direction, y + 1 * scale)
-    draw_line(x + 2 * scale * direction, y + 1 * scale, x - 2 * scale * direction, y + 1 * scale)
-    draw_line(x - 2 * scale * direction, y + 1 * scale, x - 3 * scale * direction, y - 1 * scale)
+    draw_line(x - 2 * scale, y - 1 * scale, x + 2 * scale, y - 1 * scale)
+    draw_line(x + 2 * scale, y - 1 * scale, x + 1.5 * scale, y + 1 * scale)
+    draw_line(x + 1.5 * scale, y + 1 * scale, x - 1.5 * scale, y + 1 * scale)
+    draw_line(x - 1.5 * scale, y + 1 * scale, x - 2 * scale, y - 1 * scale)
+
+    # Wings
+    draw_line(x - 1.5 * scale, y - 1 * scale, x - 2.5 * scale, y - 1 * scale)
+    draw_line(x + 1.5 * scale, y - 1 * scale, x + 2.5 * scale, y - 1 * scale)
 
     # Cockpit
-    draw_line(x - 1 * scale * direction, y + 1 * scale, x + 1 * scale * direction, y + 1 * scale)
-    draw_line(x + 1 * scale * direction, y + 1 * scale, x, y + 3 * scale)
+    draw_line(x - 0.5 * scale, y + 1 * scale, x + 0.5 * scale, y + 1 * scale)
+    draw_line(x + 0.5 * scale, y + 1 * scale, x, y + 2 * scale)
 
 def draw_bottom_spaceship():
     global bottom_spaceship_x
-    draw_spaceship(bottom_spaceship_x, -5, 0.5, 1)
+    draw_spaceship(bottom_spaceship_x, -5, 0.5)
 
 def draw_top_spaceship():
-    global top_spaceship_x, top_spaceship_direction
-    draw_spaceship(top_spaceship_x, 5, 0.5, top_spaceship_direction)
+    global top_spaceship_x
+    draw_spaceship(top_spaceship_x, 5, 0.5)
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -41,9 +44,14 @@ def display():
     glColor3f(1.0, 0.0, 0.0)  # Red color
     draw_bottom_spaceship()
 
-    # Draw top spaceship
+    # Draw top spaceship (mirror version)
     glColor3f(0.0, 0.0, 1.0)  # Blue color
+    glPushMatrix()
+    glTranslatef(top_spaceship_x, 5, 0)
+    glScalef(1, -1, 1)  # Mirror along the y-axis
+    glTranslatef(-top_spaceship_x, -5, 0)
     draw_top_spaceship()
+    glPopMatrix()
 
     glutSwapBuffers()
 
@@ -79,7 +87,7 @@ def main():
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
     glutInitWindowSize(800, 800)
-    glutCreateWindow(b"Two Spaceships Facing Each Other")
+    glutCreateWindow(b"Two Enhanced Spaceships")
 
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
