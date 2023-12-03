@@ -121,7 +121,7 @@ def keyboard(key, x, y):
 
     # Shoot bullet from top spaceship (Up arrow key)
     elif key == GLUT_KEY_UP:
-        top_bullet_y = 5  # Reset bullet position
+        top_bullet_y = -5  # Reset bullet position
         glutPostRedisplay()
 
     glutPostRedisplay()
