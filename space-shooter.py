@@ -7,9 +7,9 @@ import math
 # Global variables to store spaceship positions
 bottom_spaceship_x = -8
 top_spaceship_x = 8
-bottom_bullet_y = -15  # Initial position of bottom spaceship's bullet
-top_bullet_y = -5  # Initial position of top spaceship's bullet
-bullet_speed = 0.01
+bottom_bullets = []  # List to store bottom spaceship's bullets
+top_bullets = []  # List to store top spaceship's bullets
+bullet_speed = 0.1
 
 def draw_line(x1, y1, x2, y2, thickness):
     glLineWidth(thickness)
@@ -45,46 +45,40 @@ def draw_filled_circle(x_centre, y_centre, r):
         glVertex2f(x, y)
     glEnd()
 
-bullet_radius = 1
+bullet_radius = 0.2
 def draw_bullet(x, y, radius):
     glColor3f(1.0, 1.0, 1.0)  # White color for the bullet
     draw_filled_circle(x, y, radius)
 
-def update_bullets():
-    global bottom_bullet_y, top_bullet_y, bullet_speed
-    bottom_bullet_y += bullet_speed
-    top_bullet_y += bullet_speed
+def update_bullets(bullets):
+    global bullet_speed
+    for bullet in bullets:
+        bullet[1] += bullet_speed
 
-def draw_bottom_spaceship():
-    global bullet_radius
-    global bottom_spaceship_x, bottom_bullet_y
-    draw_spaceship(bottom_spaceship_x, -15, 0.5)
-    draw_bullet(bottom_spaceship_x, bottom_bullet_y, bullet_radius)
-
-def draw_top_spaceship():
-    global bullet_radius
-    global top_spaceship_x, top_bullet_y
-    draw_spaceship(top_spaceship_x, -5, 0.5)
-    draw_bullet(top_spaceship_x, top_bullet_y, bullet_radius)
+def draw_spaceship_and_bullets(x, y, bullets):
+    draw_spaceship(x, y, 0.5)
+    for bullet in bullets:
+        draw_bullet(bullet[0], bullet[1], bullet_radius)
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    # Draw bottom spaceship
+    # Draw bottom spaceship and bullets
     glColor3f(1.0, 0.0, 0.0)  # Red color
-    draw_bottom_spaceship()
+    draw_spaceship_and_bullets(bottom_spaceship_x, -18, bottom_bullets)
 
-    # Draw top spaceship (mirror version)
+    # Draw top spaceship and bullets (mirror version)
     glColor3f(0.0, 0.0, 1.0)  # Blue color
     glPushMatrix()
     glTranslatef(top_spaceship_x, 5, 0)
     glScalef(1, -1, 1)  # Mirror along the y-axis
     glTranslatef(-top_spaceship_x, -5, 0)
-    draw_top_spaceship()
+    draw_spaceship_and_bullets(top_spaceship_x, -8, top_bullets)
     glPopMatrix()
 
-    update_bullets()
+    update_bullets(bottom_bullets)
+    update_bullets(top_bullets)
 
     glutSwapBuffers()
 
@@ -96,7 +90,7 @@ def reshape(width, height):
     glMatrixMode(GL_MODELVIEW)
 
 def keyboard(key, x, y):
-    global bottom_spaceship_x, top_spaceship_x, bottom_bullet_y, top_bullet_y
+    global bottom_spaceship_x, top_spaceship_x, bottom_bullets, top_bullets
 
     # Move bottom spaceship left (A key)
     if key == b'A' or key == b'a':
@@ -116,15 +110,19 @@ def keyboard(key, x, y):
 
     # Shoot bullet from bottom spaceship (W key)
     elif key == b'W' or key == b'w':
-        bottom_bullet_y = -15  # Reset bullet position
+        bottom_bullets.append([bottom_spaceship_x, -18])
         glutPostRedisplay()
 
     # Shoot bullet from top spaceship (Up arrow key)
     elif key == GLUT_KEY_UP:
-        top_bullet_y = -5  # Reset bullet position
+        top_bullets.append([top_spaceship_x, -8])
         glutPostRedisplay()
 
     glutPostRedisplay()
+
+def timer(value):
+    glutPostRedisplay()
+    glutTimerFunc(16, timer, 0)  # 60 FPS
 
 def main():
     glutInit(sys.argv)
@@ -134,7 +132,7 @@ def main():
 
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
-    glutIdleFunc(display)
+    glutTimerFunc(0, timer, 0)  # Call timer function immediately
 
     glEnable(GL_DEPTH_TEST)
     glClearColor(0.0, 0.0, 0.0, 1.0)
