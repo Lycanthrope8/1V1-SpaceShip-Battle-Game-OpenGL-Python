@@ -2,10 +2,14 @@ import sys
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import math
 
 # Global variables to store spaceship positions
 bottom_spaceship_x = -8
 top_spaceship_x = 8
+bottom_bullet_y = -15  # Initial position of bottom spaceship's bullet
+top_bullet_y = -5  # Initial position of top spaceship's bullet
+bullet_speed = 0.01
 
 def draw_line(x1, y1, x2, y2, thickness):
     glLineWidth(thickness)
@@ -31,13 +35,37 @@ def draw_spaceship(x, y, scale):
     draw_line(x - 0.5 * scale, y + 1 * scale, x + 0.5 * scale, y + 1 * scale, thickness)
     draw_line(x + 0.5 * scale, y + 1 * scale, x, y + 2 * scale, thickness)
 
+def draw_filled_circle(x_centre, y_centre, r):
+    glBegin(GL_TRIANGLE_FAN)
+    glVertex2f(x_centre, y_centre)  # Center of the circle
+    for i in range(361):  # 360 points on the circumference
+        angle = math.radians(i)
+        x = x_centre + r * math.cos(angle)
+        y = y_centre + r * math.sin(angle)
+        glVertex2f(x, y)
+    glEnd()
+
+bullet_radius = 1
+def draw_bullet(x, y, radius):
+    glColor3f(1.0, 1.0, 1.0)  # White color for the bullet
+    draw_filled_circle(x, y, radius)
+
+def update_bullets():
+    global bottom_bullet_y, top_bullet_y, bullet_speed
+    bottom_bullet_y += bullet_speed
+    top_bullet_y += bullet_speed
+
 def draw_bottom_spaceship():
-    global bottom_spaceship_x
+    global bullet_radius
+    global bottom_spaceship_x, bottom_bullet_y
     draw_spaceship(bottom_spaceship_x, -15, 0.5)
+    draw_bullet(bottom_spaceship_x, bottom_bullet_y, bullet_radius)
 
 def draw_top_spaceship():
-    global top_spaceship_x
+    global bullet_radius
+    global top_spaceship_x, top_bullet_y
     draw_spaceship(top_spaceship_x, -5, 0.5)
+    draw_bullet(top_spaceship_x, top_bullet_y, bullet_radius)
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
@@ -56,6 +84,8 @@ def display():
     draw_top_spaceship()
     glPopMatrix()
 
+    update_bullets()
+
     glutSwapBuffers()
 
 def reshape(width, height):
@@ -66,7 +96,7 @@ def reshape(width, height):
     glMatrixMode(GL_MODELVIEW)
 
 def keyboard(key, x, y):
-    global bottom_spaceship_x, top_spaceship_x
+    global bottom_spaceship_x, top_spaceship_x, bottom_bullet_y, top_bullet_y
 
     # Move bottom spaceship left (A key)
     if key == b'A' or key == b'a':
@@ -83,6 +113,16 @@ def keyboard(key, x, y):
     # Move top spaceship right (Right arrow key)
     elif key == GLUT_KEY_RIGHT:
         top_spaceship_x = min(top_spaceship_x + 1, 19)
+
+    # Shoot bullet from bottom spaceship (W key)
+    elif key == b'W' or key == b'w':
+        bottom_bullet_y = -15  # Reset bullet position
+        glutPostRedisplay()
+
+    # Shoot bullet from top spaceship (Up arrow key)
+    elif key == GLUT_KEY_UP:
+        top_bullet_y = 5  # Reset bullet position
+        glutPostRedisplay()
 
     glutPostRedisplay()
 
