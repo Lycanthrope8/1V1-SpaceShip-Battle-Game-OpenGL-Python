@@ -35,6 +35,7 @@ def draw_spaceship(x, y, scale):
     draw_line(x - 0.5 * scale, y + 1 * scale, x + 0.5 * scale, y + 1 * scale, thickness)
     draw_line(x + 0.5 * scale, y + 1 * scale, x, y + 2 * scale, thickness)
 
+
 def draw_filled_circle(x_centre, y_centre, r):
     glBegin(GL_TRIANGLE_FAN)
     glVertex2f(x_centre, y_centre)  # Center of the circle
@@ -44,6 +45,8 @@ def draw_filled_circle(x_centre, y_centre, r):
         y = y_centre + r * math.sin(angle)
         glVertex2f(x, y)
     glEnd()
+
+
 
 bullet_radius = 0.2
 def draw_bullet(x, y, radius):
@@ -55,32 +58,54 @@ def update_bullets(bullets):
     for bullet in bullets:
         bullet[1] += bullet_speed
 
-def draw_spaceship_and_bullets(x, y, bullets):
-    draw_spaceship(x, y, 0.5)
-    for bullet in bullets:
+# ... (previous code)
+
+def draw_bottom_spaceship():
+    glColor3f(1.0, 0.0, 0.0)  # Red color
+    draw_spaceship(bottom_spaceship_x, -18, 0.5)
+
+def draw_top_spaceship():
+    glColor3f(0.0, 0.0, 1.0)  # Blue color
+    glPushMatrix()
+    glTranslatef(top_spaceship_x, 5, 0)
+    glScalef(1, -1, 1)  # Mirror along the y-axis
+    glTranslatef(-top_spaceship_x, -5, 0)
+    draw_spaceship(top_spaceship_x, -8, 0.5)
+    glPopMatrix()
+
+def draw_bottom_spaceship_bullets():
+    for bullet in bottom_bullets:
         draw_bullet(bullet[0], bullet[1], bullet_radius)
+
+def draw_top_spaceship_bullets():
+    glColor3f(0.0, 0.0, 1.0)  # Blue color
+
+    # Draw the bullets and update their positions
+    for bullet in top_bullets:
+        # Mirror the y-coordinate to account for the mirroring of the spaceship
+        mirrored_y = 2 * (5) - bullet[1]  # (y) should be opposite sign of the ships y
+        draw_bullet(bullet[0], mirrored_y, bullet_radius)
+
+
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
     # Draw bottom spaceship and bullets
-    glColor3f(1.0, 0.0, 0.0)  # Red color
-    draw_spaceship_and_bullets(bottom_spaceship_x, -18, bottom_bullets)
+    draw_bottom_spaceship()
+    draw_bottom_spaceship_bullets()
 
     # Draw top spaceship and bullets (mirror version)
-    glColor3f(0.0, 0.0, 1.0)  # Blue color
-    glPushMatrix()
-    glTranslatef(top_spaceship_x, 5, 0)
-    glScalef(1, -1, 1)  # Mirror along the y-axis
-    glTranslatef(-top_spaceship_x, -5, 0)
-    draw_spaceship_and_bullets(top_spaceship_x, -8, top_bullets)
-    glPopMatrix()
+    draw_top_spaceship()
+    draw_top_spaceship_bullets()
 
     update_bullets(bottom_bullets)
     update_bullets(top_bullets)
 
     glutSwapBuffers()
+
+# ... (rest of the code remains unchanged)
 
 def reshape(width, height):
     glViewport(0, 0, width, height)
