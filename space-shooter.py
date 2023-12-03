@@ -8,53 +8,30 @@ bottom_spaceship_x = -8
 top_spaceship_x = 8
 top_spaceship_direction = -1  # Change direction to make the top spaceship face downward
 
-def draw_bottom_spaceship():
-    global bottom_spaceship_x
-
-    glPushMatrix()
-    glTranslatef(bottom_spaceship_x, -5, 0)
-    glScalef(0.5, 0.5, 1)
-
-    # Body
-    glBegin(GL_QUADS)
-    glVertex2f(-3, -1)
-    glVertex2f(3, -1)
-    glVertex2f(2, 1)
-    glVertex2f(-2, 1)
+def draw_line(x1, y1, x2, y2):
+    glBegin(GL_LINES)
+    glVertex2f(x1, y1)
+    glVertex2f(x2, y2)
     glEnd()
+
+def draw_spaceship(x, y, scale, direction):
+    # Body
+    draw_line(x - 3 * scale, y - 1 * scale, x + 3 * scale, y - 1 * scale)
+    draw_line(x + 3 * scale, y - 1 * scale, x + 2 * scale * direction, y + 1 * scale)
+    draw_line(x + 2 * scale * direction, y + 1 * scale, x - 2 * scale * direction, y + 1 * scale)
+    draw_line(x - 2 * scale * direction, y + 1 * scale, x - 3 * scale * direction, y - 1 * scale)
 
     # Cockpit
-    glBegin(GL_TRIANGLES)
-    glVertex2f(-1, 1)
-    glVertex2f(1, 1)
-    glVertex2f(0, 3)
-    glEnd()
+    draw_line(x - 1 * scale * direction, y + 1 * scale, x + 1 * scale * direction, y + 1 * scale)
+    draw_line(x + 1 * scale * direction, y + 1 * scale, x, y + 3 * scale)
 
-    glPopMatrix()
+def draw_bottom_spaceship():
+    global bottom_spaceship_x
+    draw_spaceship(bottom_spaceship_x, -5, 0.5, 1)
 
 def draw_top_spaceship():
     global top_spaceship_x, top_spaceship_direction
-
-    glPushMatrix()
-    glTranslatef(top_spaceship_x, 5, 0)
-    glScalef(0.5, 0.5, 1)
-
-    # Body
-    glBegin(GL_QUADS)
-    glVertex2f(-3 * top_spaceship_direction, -1)
-    glVertex2f(3 * top_spaceship_direction, -1)
-    glVertex2f(2 * top_spaceship_direction, 1)
-    glVertex2f(-2 * top_spaceship_direction, 1)
-    glEnd()
-
-    # Cockpit
-    glBegin(GL_TRIANGLES)
-    glVertex2f(-1 * top_spaceship_direction, -1)
-    glVertex2f(1 * top_spaceship_direction, -1)
-    glVertex2f(0, -3)
-    glEnd()
-
-    glPopMatrix()
+    draw_spaceship(top_spaceship_x, 5, 0.5, top_spaceship_direction)
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
