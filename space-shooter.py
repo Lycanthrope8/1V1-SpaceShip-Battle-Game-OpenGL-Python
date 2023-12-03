@@ -3,28 +3,55 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 
-# Global variables to store spaceship positions
+# Global variables to store spaceship positions and directions
 bottom_spaceship_x = -8
 top_spaceship_x = 8
+top_spaceship_direction = -1  # Change direction to make the top spaceship face downward
 
-def draw_spaceship(x, y, direction):
+def draw_bottom_spaceship():
+    global bottom_spaceship_x
+
     glPushMatrix()
-    glTranslatef(x, y, 0)
+    glTranslatef(bottom_spaceship_x, -5, 0)
     glScalef(0.5, 0.5, 1)
 
     # Body
-    glBegin(GL_POLYGON)
-    glVertex2f(-5 * direction, -2.5)
-    glVertex2f(-2.5 * direction, 2.5)
-    glVertex2f(2.5 * direction, 2.5)
-    glVertex2f(5 * direction, -2.5)
+    glBegin(GL_QUADS)
+    glVertex2f(-3, -1)
+    glVertex2f(3, -1)
+    glVertex2f(2, 1)
+    glVertex2f(-2, 1)
     glEnd()
 
     # Cockpit
     glBegin(GL_TRIANGLES)
-    glVertex2f(-1 * direction, 2.5)
-    glVertex2f(1 * direction, 2.5)
-    glVertex2f(0, 5)
+    glVertex2f(-1, 1)
+    glVertex2f(1, 1)
+    glVertex2f(0, 3)
+    glEnd()
+
+    glPopMatrix()
+
+def draw_top_spaceship():
+    global top_spaceship_x, top_spaceship_direction
+
+    glPushMatrix()
+    glTranslatef(top_spaceship_x, 5, 0)
+    glScalef(0.5, 0.5, 1)
+
+    # Body
+    glBegin(GL_QUADS)
+    glVertex2f(-3 * top_spaceship_direction, -1)
+    glVertex2f(3 * top_spaceship_direction, -1)
+    glVertex2f(2 * top_spaceship_direction, 1)
+    glVertex2f(-2 * top_spaceship_direction, 1)
+    glEnd()
+
+    # Cockpit
+    glBegin(GL_TRIANGLES)
+    glVertex2f(-1 * top_spaceship_direction, -1)
+    glVertex2f(1 * top_spaceship_direction, -1)
+    glVertex2f(0, -3)
     glEnd()
 
     glPopMatrix()
@@ -35,11 +62,11 @@ def display():
 
     # Draw bottom spaceship
     glColor3f(1.0, 0.0, 0.0)  # Red color
-    draw_spaceship(max(min(bottom_spaceship_x, 19), -19), -5, 1)
+    draw_bottom_spaceship()
 
     # Draw top spaceship
     glColor3f(0.0, 0.0, 1.0)  # Blue color
-    draw_spaceship(max(min(top_spaceship_x, 19), -19), 5, -1)
+    draw_top_spaceship()
 
     glutSwapBuffers()
 
@@ -55,19 +82,19 @@ def keyboard(key, x, y):
 
     # Move bottom spaceship left (A key)
     if key == b'A' or key == b'a':
-        bottom_spaceship_x -= 1
+        bottom_spaceship_x = max(bottom_spaceship_x - 1, -19)
 
     # Move bottom spaceship right (D key)
     elif key == b'D' or key == b'd':
-        bottom_spaceship_x += 1
+        bottom_spaceship_x = min(bottom_spaceship_x + 1, 19)
 
     # Move top spaceship left (Left arrow key)
     elif key == GLUT_KEY_LEFT:
-        top_spaceship_x -= 1
+        top_spaceship_x = max(top_spaceship_x - 1, -19)
 
     # Move top spaceship right (Right arrow key)
     elif key == GLUT_KEY_RIGHT:
-        top_spaceship_x += 1
+        top_spaceship_x = min(top_spaceship_x + 1, 19)
 
     glutPostRedisplay()
 
