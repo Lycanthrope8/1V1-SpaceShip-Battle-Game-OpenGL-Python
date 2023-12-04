@@ -12,6 +12,10 @@ bottom_spaceship_x = 0.0
 top_spaceship_x = 0.0
 spaceship_speed = 0.01
 
+# Health variables
+bottom_spaceship_health = 100
+top_spaceship_health = 100
+
 # Bullet properties
 bottom_bullets = []
 top_bullets = []
@@ -126,9 +130,9 @@ def checkCollision(bulletX, bulletY, spaceshipX, spaceshipY):
         spaceshipY - 0.1 < bulletY < spaceshipY + 0.1
     )
 
-# Function to update game logic
 def updateGameLogic(value):
-    global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x, bottom_bullet_cooldown, top_bullet_cooldown
+    global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x
+    global bottom_bullet_cooldown, top_bullet_cooldown, bottom_spaceship_health, top_spaceship_health
 
     # Update bottom spaceship position
     if key_states['a']:
@@ -163,13 +167,28 @@ def updateGameLogic(value):
     # Check collisions
     for bullet in bottom_bullets:
         if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
-            print("Spaceship 2 hit!")
+            # print("Spaceship 2 hit!")
             bottom_bullets.remove(bullet)
+            top_spaceship_health -= 2  # Deduct health
+            print("Top Spaceship Health", top_spaceship_health)
+            print("Bottom Spaceship Health", bottom_spaceship_health)
 
     for bullet in top_bullets:
         if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
-            print("Spaceship 1 hit!")
+            # print("Spaceship 1 hit!")
             top_bullets.remove(bullet)
+            bottom_spaceship_health -= 2  # Deduct health
+            print("Top Spaceship Health", top_spaceship_health)
+            print("Bottom Spaceship Health", bottom_spaceship_health)
+
+    # Check for the end of the game
+    if bottom_spaceship_health <= 0:
+        print("Spaceship 2 Wins the Game!")
+        glutLeaveMainLoop()
+
+    if top_spaceship_health <= 0:
+        print("Spaceship 1 Wins the Game!")
+        glutLeaveMainLoop()
 
     # Reduce bullet cooldown
     if bottom_bullet_cooldown > 0:
