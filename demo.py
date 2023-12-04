@@ -75,13 +75,21 @@ def drawBullet(x, y, radius):
     glEnd()
 
 
+# Pause state
+is_game_paused = False
+
+# Function to handle key press events
 # Function to handle key press events
 def keyboard(key, x, y):
-    global key_states
+    global key_states, is_game_paused
 
     key = key.decode("utf-8")
 
-    if key in key_states:
+    if key == 'p':
+        is_game_paused = not is_game_paused  # Toggle pause state
+    elif key == '\x1b':  # Check for 'Escape' key
+        glutLeaveMainLoop()  # Close the window
+    elif key in key_states and not is_game_paused:
         key_states[key] = True
 
     glutPostRedisplay()
@@ -99,13 +107,13 @@ def keyboardUp(key, x, y):
 
 # Function to handle special key press events
 def specialKeys(key, x, y):
-    global key_states
+    global key_states, is_game_paused
 
-    if key == GLUT_KEY_LEFT:
+    if key == GLUT_KEY_LEFT and not is_game_paused:
         key_states['left'] = True
-    elif key == GLUT_KEY_RIGHT:
+    elif key == GLUT_KEY_RIGHT and not is_game_paused:
         key_states['right'] = True
-    elif key == GLUT_KEY_UP:
+    elif key == GLUT_KEY_UP and not is_game_paused:
         key_states['up'] = True
 
     glutPostRedisplay()
@@ -130,72 +138,71 @@ def checkCollision(bulletX, bulletY, spaceshipX, spaceshipY):
         spaceshipY - 0.1 < bulletY < spaceshipY + 0.1
     )
 
+# Function to update game logic
 def updateGameLogic(value):
     global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x
     global bottom_bullet_cooldown, top_bullet_cooldown, bottom_spaceship_health, top_spaceship_health
+    global is_game_paused
 
-    # Update bottom spaceship position
-    if key_states['a']:
-        bottom_spaceship_x = max(bottom_spaceship_x - spaceship_speed, -1.0)
-    if key_states['d']:
-        bottom_spaceship_x = min(bottom_spaceship_x + spaceship_speed, 1.0)
+    if not is_game_paused:
+        # Update bottom spaceship position
+        if key_states['a']:
+            bottom_spaceship_x = max(bottom_spaceship_x - spaceship_speed, -1.0)
+        if key_states['d']:
+            bottom_spaceship_x = min(bottom_spaceship_x + spaceship_speed, 1.0)
 
-    # Update top spaceship position
-    if key_states['left']:
-        top_spaceship_x = max(top_spaceship_x - spaceship_speed, -1.0)
-    if key_states['right']:
-        top_spaceship_x = min(top_spaceship_x + spaceship_speed, 1.0)
+        # Update top spaceship position
+        if key_states['left']:
+            top_spaceship_x = max(top_spaceship_x - spaceship_speed, -1.0)
+        if key_states['right']:
+            top_spaceship_x = min(top_spaceship_x + spaceship_speed, 1.0)
 
-    # Shoot bullet from bottom spaceship (W key)
-    if key_states['w'] and bottom_bullet_cooldown <= 0:
-        bottom_bullets.append([bottom_spaceship_x, -0.8])
-        bottom_bullet_cooldown = 10  # Cooldown in frames
+        # Shoot bullet from bottom spaceship (W key)
+        if key_states['w'] and bottom_bullet_cooldown <= 0:
+            bottom_bullets.append([bottom_spaceship_x, -0.8])
+            bottom_bullet_cooldown = 10  # Cooldown in frames
 
-    # Shoot bullet from top spaceship (Up arrow key)
-    if key_states['up'] and top_bullet_cooldown <= 0:
-        top_bullets.append([top_spaceship_x, 0.8])
-        top_bullet_cooldown = 10  # Cooldown in frames
+        # Shoot bullet from top spaceship (Up arrow key)
+        if key_states['up'] and top_bullet_cooldown <= 0:
+            top_bullets.append([top_spaceship_x, 0.8])
+            top_bullet_cooldown = 10  # Cooldown in frames
 
-    # Update bottom bullets
-    for bullet in bottom_bullets:
-        bullet[1] += 0.01
+        # Update bottom bullets
+        for bullet in bottom_bullets:
+            bullet[1] += 0.01
 
-    # Update top bullets
-    for bullet in top_bullets:
-        bullet[1] -= 0.01
+        # Update top bullets
+        for bullet in top_bullets:
+            bullet[1] -= 0.01
 
-    # Check collisions
-    for bullet in bottom_bullets:
-        if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
-            # print("Spaceship 2 hit!")
-            bottom_bullets.remove(bullet)
-            top_spaceship_health -= 2  # Deduct health
-            print("Top Spaceship Health", top_spaceship_health)
-            print("Bottom Spaceship Health", bottom_spaceship_health)
+        # Check collisions
+        for bullet in bottom_bullets:
+            if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
+                print("Spaceship 2 hit!")
+                bottom_bullets.remove(bullet)
+                top_spaceship_health -= 2  # Deduct health
 
-    for bullet in top_bullets:
-        if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
-            # print("Spaceship 1 hit!")
-            top_bullets.remove(bullet)
-            bottom_spaceship_health -= 2  # Deduct health
-            print("Top Spaceship Health", top_spaceship_health)
-            print("Bottom Spaceship Health", bottom_spaceship_health)
+        for bullet in top_bullets:
+            if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
+                print("Spaceship 1 hit!")
+                top_bullets.remove(bullet)
+                bottom_spaceship_health -= 2  # Deduct health
 
-    # Check for the end of the game
-    if bottom_spaceship_health <= 0:
-        print("Spaceship 2 Wins the Game!")
-        glutLeaveMainLoop()
+        # Check for the end of the game
+        if bottom_spaceship_health <= 0:
+            print("Spaceship 1 lost!")
+            glutLeaveMainLoop()
 
-    if top_spaceship_health <= 0:
-        print("Spaceship 1 Wins the Game!")
-        glutLeaveMainLoop()
+        if top_spaceship_health <= 0:
+            print("Spaceship 2 lost!")
+            glutLeaveMainLoop()
 
-    # Reduce bullet cooldown
-    if bottom_bullet_cooldown > 0:
-        bottom_bullet_cooldown -= 1
+        # Reduce bullet cooldown
+        if bottom_bullet_cooldown > 0:
+            bottom_bullet_cooldown -= 1
 
-    if top_bullet_cooldown > 0:
-        top_bullet_cooldown -= 1
+        if top_bullet_cooldown > 0:
+            top_bullet_cooldown -= 1
 
     glutTimerFunc(16, updateGameLogic, 0)
     glutPostRedisplay()
