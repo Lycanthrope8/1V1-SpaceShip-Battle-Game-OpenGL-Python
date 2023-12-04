@@ -144,12 +144,12 @@ def updateGameLogic(value):
 
     # Shoot bullet from bottom spaceship (W key)
     if key_states['w'] and bottom_bullet_cooldown <= 0:
-        bottom_bullets.append([bottom_spaceship_x, -0.7])
+        bottom_bullets.append([bottom_spaceship_x, -0.8])
         bottom_bullet_cooldown = 10  # Cooldown in frames
 
     # Shoot bullet from top spaceship (Up arrow key)
     if key_states['up'] and top_bullet_cooldown <= 0:
-        top_bullets.append([top_spaceship_x, 0.7])
+        top_bullets.append([top_spaceship_x, 0.8])
         top_bullet_cooldown = 10  # Cooldown in frames
 
     # Update bottom bullets
