@@ -24,12 +24,38 @@ bottom_bullet_cooldown = 0
 top_bullet_cooldown = 0
 
 # Function to draw a spaceship
-def drawSpaceship(x, y):
+def drawSpaceship(x, y, color1, color2, facing_up=True):
+    direction = 1 if facing_up else -1
+    scale_factor = 0.8  # Adjust the scale factor to make the spaceship smaller
+
+    # Body
     glBegin(GL_QUADS)
-    glVertex2f(x - 0.1, y - 0.1)
-    glVertex2f(x + 0.1, y - 0.1)
-    glVertex2f(x + 0.1, y + 0.1)
-    glVertex2f(x - 0.1, y + 0.1)
+    glColor3f(color1[0], color1[1], color1[2])
+    glVertex2f(x - 0.04 * scale_factor, y - direction * 0.08 * scale_factor)  # Bottom-left vertex
+    glVertex2f(x + 0.04 * scale_factor, y - direction * 0.08 * scale_factor)  # Bottom-right vertex
+    glColor3f(color2[0], color2[1], color2[2])
+    glVertex2f(x + 0.04 * scale_factor, y + direction * 0.08 * scale_factor)  # Top-right vertex
+    glVertex2f(x - 0.04 * scale_factor, y + direction * 0.08 * scale_factor)  # Top-left vertex
+    glEnd()
+
+    # Cockpit
+    glBegin(GL_TRIANGLES)
+    glVertex2f(x - 0.016 * scale_factor, y + direction * 0.08 * scale_factor)  # Top vertex
+    glVertex2f(x + 0.016 * scale_factor, y + direction * 0.08 * scale_factor)  # Top-right vertex
+    glVertex2f(x, y + direction * 0.12 * scale_factor)                        # Tip vertex
+    glEnd()
+
+    # Wings
+    glBegin(GL_TRIANGLES)
+    glVertex2f(x - 0.04 * scale_factor, y - direction * 0.04 * scale_factor)  # Bottom-left vertex
+    glVertex2f(x - 0.08 * scale_factor, y - direction * 0.08 * scale_factor)  # Top-left vertex
+    glVertex2f(x - 0.04 * scale_factor, y + direction * 0.04 * scale_factor)  # Top-right vertex
+    glEnd()
+
+    glBegin(GL_TRIANGLES)
+    glVertex2f(x + 0.04 * scale_factor, y - direction * 0.04 * scale_factor)  # Bottom-right vertex
+    glVertex2f(x + 0.08 * scale_factor, y - direction * 0.08 * scale_factor)  # Top-left vertex
+    glVertex2f(x + 0.04 * scale_factor, y + direction * 0.04 * scale_factor)  # Top-right vertex
     glEnd()
 
 # Function to draw a bullet using midpoint circle algorithm
@@ -159,16 +185,18 @@ def updateGameLogic(value):
 def drawScene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    glColor3f(1.0, 1.0, 1.0)
-    drawSpaceship(bottom_spaceship_x, -0.9)
+    # Spaceship 1 (Green and Yellow)
+    drawSpaceship(bottom_spaceship_x, -0.9, [0.0, 1.0, 0.0], [1.0, 1.0, 0.0])
 
+    # Bullets of Spaceship 1
     glColor3f(0.0, 1.0, 0.0)
     for bullet in bottom_bullets:
         drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
 
-    glColor3f(1.0, 1.0, 1.0)
-    drawSpaceship(top_spaceship_x, 0.9)
+    # Spaceship 2 (Blue and Cyan, facing downwards)
+    drawSpaceship(top_spaceship_x, 0.9, [0.0, 0.0, 1.0], [0.0, 1.0, 1.0], facing_up=False)
 
+    # Bullets of Spaceship 2
     glColor3f(0.0, 0.0, 1.0)
     for bullet in top_bullets:
         drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
