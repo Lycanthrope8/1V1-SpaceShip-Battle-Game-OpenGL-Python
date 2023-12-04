@@ -1,6 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import math
 
 # Window size
 window_width = 800
@@ -31,14 +32,18 @@ def drawSpaceship(x, y):
     glVertex2f(x - 0.1, y + 0.1)
     glEnd()
 
-# Function to draw a bullet
-def drawBullet(x, y):
-    glBegin(GL_QUADS)
-    glVertex2f(x - 0.02, y - 0.02)
-    glVertex2f(x + 0.02, y - 0.02)
-    glVertex2f(x + 0.02, y + 0.02)
-    glVertex2f(x - 0.02, y + 0.02)
+# Function to draw a bullet using midpoint circle algorithm
+def drawBullet(x, y, radius):
+    num_segments = 100  # You can adjust this value for a smoother circle
+    glBegin(GL_TRIANGLE_FAN)
+    glVertex2f(x, y)  # Center of circle
+    for i in range(num_segments + 1):
+        theta = i * (2.0 * math.pi / num_segments)
+        bullet_x = x + radius * math.cos(theta)
+        bullet_y = y + radius * math.sin(theta)
+        glVertex2f(bullet_x, bullet_y)
     glEnd()
+
 
 # Function to handle key press events
 def keyboard(key, x, y):
@@ -159,14 +164,14 @@ def drawScene():
 
     glColor3f(0.0, 1.0, 0.0)
     for bullet in bottom_bullets:
-        drawBullet(bullet[0], bullet[1])
+        drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
 
     glColor3f(1.0, 1.0, 1.0)
     drawSpaceship(top_spaceship_x, 0.9)
 
     glColor3f(0.0, 0.0, 1.0)
     for bullet in top_bullets:
-        drawBullet(bullet[0], bullet[1])
+        drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
 
     glutSwapBuffers()
 
