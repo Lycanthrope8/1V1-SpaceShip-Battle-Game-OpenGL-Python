@@ -15,6 +15,13 @@ spaceship_speed = 0.01
 bottom_bullets = []
 top_bullets = []
 
+# Key states
+key_states = {'a': False, 'd': False, 'left': False, 'right': False, 'w': False, 'up': False}
+
+# Bullet cooldown
+bottom_bullet_cooldown = 0
+top_bullet_cooldown = 0
+
 # Function to draw a spaceship
 def drawSpaceship(x, y):
     glBegin(GL_QUADS)
@@ -33,33 +40,51 @@ def drawBullet(x, y):
     glVertex2f(x - 0.02, y + 0.02)
     glEnd()
 
-# Function to handle keyboard input
+# Function to handle key press events
 def keyboard(key, x, y):
-    global bottom_spaceship_x, top_spaceship_x, bottom_bullets, top_bullets
+    global key_states
 
-    # Move bottom spaceship left (A key)
-    if key == b'A' or key == b'a':
-        bottom_spaceship_x = max(bottom_spaceship_x - spaceship_speed, -1.0)
+    key = key.decode("utf-8")
 
-    # Move bottom spaceship right (D key)
-    elif key == b'D' or key == b'd':
-        bottom_spaceship_x = min(bottom_spaceship_x + spaceship_speed, 1.0)
+    if key in key_states:
+        key_states[key] = True
 
-    # Move top spaceship left (Left arrow key)
-    elif key == GLUT_KEY_LEFT:
-        top_spaceship_x = max(top_spaceship_x - spaceship_speed, -1.0)
+    glutPostRedisplay()
 
-    # Move top spaceship right (Right arrow key)
+# Function to handle key release events
+def keyboardUp(key, x, y):
+    global key_states
+
+    key = key.decode("utf-8")
+
+    if key in key_states:
+        key_states[key] = False
+
+    glutPostRedisplay()
+
+# Function to handle special key press events
+def specialKeys(key, x, y):
+    global key_states
+
+    if key == GLUT_KEY_LEFT:
+        key_states['left'] = True
     elif key == GLUT_KEY_RIGHT:
-        top_spaceship_x = min(top_spaceship_x + spaceship_speed, 1.0)
-
-    # Shoot bullet from bottom spaceship (W key)
-    elif key == b'W' or key == b'w':
-        bottom_bullets.append([bottom_spaceship_x, -0.7])
-
-    # Shoot bullet from top spaceship (Up arrow key)
+        key_states['right'] = True
     elif key == GLUT_KEY_UP:
-        top_bullets.append([top_spaceship_x, 0.7])
+        key_states['up'] = True
+
+    glutPostRedisplay()
+
+# Function to handle special key release events
+def specialKeysUp(key, x, y):
+    global key_states
+
+    if key == GLUT_KEY_LEFT:
+        key_states['left'] = False
+    elif key == GLUT_KEY_RIGHT:
+        key_states['right'] = False
+    elif key == GLUT_KEY_UP:
+        key_states['up'] = False
 
     glutPostRedisplay()
 
@@ -72,25 +97,58 @@ def checkCollision(bulletX, bulletY, spaceshipX, spaceshipY):
 
 # Function to update game logic
 def updateGameLogic(value):
-    global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x
+    global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x, bottom_bullet_cooldown, top_bullet_cooldown
+
+    # Update bottom spaceship position
+    if key_states['a']:
+        bottom_spaceship_x = max(bottom_spaceship_x - spaceship_speed, -1.0)
+    if key_states['d']:
+        bottom_spaceship_x = min(bottom_spaceship_x + spaceship_speed, 1.0)
+
+    # Update top spaceship position
+    if key_states['left']:
+        top_spaceship_x = max(top_spaceship_x - spaceship_speed, -1.0)
+    if key_states['right']:
+        top_spaceship_x = min(top_spaceship_x + spaceship_speed, 1.0)
+
+    # Shoot bullet from bottom spaceship (W key)
+    if key_states['w'] and bottom_bullet_cooldown <= 0:
+        bottom_bullets.append([bottom_spaceship_x, -0.7])
+        bottom_bullet_cooldown = 10  # Cooldown in frames
+
+    # Shoot bullet from top spaceship (Up arrow key)
+    if key_states['up'] and top_bullet_cooldown <= 0:
+        top_bullets.append([top_spaceship_x, 0.7])
+        top_bullet_cooldown = 10  # Cooldown in frames
 
     # Update bottom bullets
     for bullet in bottom_bullets:
         bullet[1] += 0.01
-        if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
-            print("Spaceship 2 hit!")
-            bottom_bullets.remove(bullet)
 
     # Update top bullets
     for bullet in top_bullets:
         bullet[1] -= 0.01
+
+    # Check collisions
+    for bullet in bottom_bullets:
+        if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
+            print("Spaceship 2 hit!")
+            bottom_bullets.remove(bullet)
+
+    for bullet in top_bullets:
         if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
             print("Spaceship 1 hit!")
             top_bullets.remove(bullet)
 
+    # Reduce bullet cooldown
+    if bottom_bullet_cooldown > 0:
+        bottom_bullet_cooldown -= 1
+
+    if top_bullet_cooldown > 0:
+        top_bullet_cooldown -= 1
+
     glutTimerFunc(16, updateGameLogic, 0)
     glutPostRedisplay()
-
 
 # Function to draw the scene
 def drawScene():
@@ -130,7 +188,9 @@ def main():
 
     glutDisplayFunc(drawScene)
     glutKeyboardFunc(keyboard)
-    glutSpecialFunc(keyboard)
+    glutKeyboardUpFunc(keyboardUp)
+    glutSpecialFunc(specialKeys)
+    glutSpecialUpFunc(specialKeysUp)
     glutTimerFunc(16, updateGameLogic, 0)
 
     glutMainLoop()
