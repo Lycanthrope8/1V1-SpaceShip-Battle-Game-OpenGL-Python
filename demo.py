@@ -15,7 +15,7 @@ spaceship_speed = 0.01
 # Health variables
 bottom_spaceship_health = 100
 top_spaceship_health = 100
-
+match_result = None
 # Bullet properties
 bottom_bullets = []
 top_bullets = []
@@ -74,6 +74,17 @@ def drawBullet(x, y, radius):
         glVertex2f(bullet_x, bullet_y)
     glEnd()
 
+# Function to draw the match result
+def drawMatchResult(result_text):
+    glColor3f(1.0, 1.0, 1.0)
+    drawText(-0.08, 0.0, result_text)  # Adjust position as needed
+
+
+# Function to draw text on the screen
+def drawText(x, y, text):
+    glRasterPos2f(x, y)
+    for character in text:
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ctypes.c_int(ord(character)))
 
 # Pause state
 is_game_paused = False
@@ -142,7 +153,7 @@ def checkCollision(bulletX, bulletY, spaceshipX, spaceshipY):
 def updateGameLogic(value):
     global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x
     global bottom_bullet_cooldown, top_bullet_cooldown, bottom_spaceship_health, top_spaceship_health
-    global is_game_paused
+    global is_game_paused, match_result
 
     if not is_game_paused:
         # Update bottom spaceship position
@@ -178,24 +189,21 @@ def updateGameLogic(value):
         # Check collisions
         for bullet in bottom_bullets:
             if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
-                print("Spaceship 2 hit!")
+                # print("Spaceship 2 hit!")
                 bottom_bullets.remove(bullet)
-                top_spaceship_health -= 2  # Deduct health
+                top_spaceship_health -= 2
 
         for bullet in top_bullets:
             if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
-                print("Spaceship 1 hit!")
+                # print("Spaceship 1 hit!")
                 top_bullets.remove(bullet)
-                bottom_spaceship_health -= 2  # Deduct health
+                bottom_spaceship_health -= 2
 
         # Check for the end of the game
         if bottom_spaceship_health <= 0:
-            print("Spaceship 1 lost!")
-            glutLeaveMainLoop()
-
-        if top_spaceship_health <= 0:
-            print("Spaceship 2 lost!")
-            glutLeaveMainLoop()
+            match_result = "Spaceship 2 Win!\nPress Esc to Escape the game"
+        elif top_spaceship_health <= 0:
+            match_result = "Spaceship 1 Win!\nPress Esc to Escape the game"
 
         # Reduce bullet cooldown
         if bottom_bullet_cooldown > 0:
@@ -211,23 +219,41 @@ def updateGameLogic(value):
 def drawScene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # Spaceship 1 (Green and Yellow)
-    drawSpaceship(bottom_spaceship_x, -0.9, [0.0, 1.0, 0.0], [1.0, 1.0, 0.0])
+    # Display "Paused" text or match result in the middle of the window
+    if is_game_paused:
+        result_text = "Paused"
+    elif match_result is not None:
+        result_text = match_result
+        drawMatchResult(result_text)
+    else:
+        # Spaceship 1 (Green and Yellow)
+        drawSpaceship(bottom_spaceship_x, -0.9, [0.0, 1.0, 0.0], [1.0, 1.0, 0.0])
 
-    # Bullets of Spaceship 1
-    glColor3f(0.0, 1.0, 0.0)
-    for bullet in bottom_bullets:
-        drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
+        # Bullets of Spaceship 1
+        glColor3f(0.0, 1.0, 0.0)
+        for bullet in bottom_bullets:
+            drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
 
-    # Spaceship 2 (Blue and Cyan, facing downwards)
-    drawSpaceship(top_spaceship_x, 0.9, [0.0, 0.0, 1.0], [0.0, 1.0, 1.0], facing_up=False)
+        # Spaceship 2 (Blue and Cyan, facing downwards)
+        drawSpaceship(top_spaceship_x, 0.9, [0.0, 0.0, 1.0], [0.0, 1.0, 1.0], facing_up=False)
 
-    # Bullets of Spaceship 2
-    glColor3f(0.0, 0.0, 1.0)
-    for bullet in top_bullets:
-        drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
+        # Bullets of Spaceship 2
+        glColor3f(0.0, 0.0, 1.0)
+        for bullet in top_bullets:
+            drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
+
+        # Draw health for Spaceship 1
+        glColor3f(1.0, 1.0, 1.0)
+        drawText(-0.8, -0.9, f"Health: {bottom_spaceship_health}")
+
+        # Draw health for Spaceship 2
+        glColor3f(1.0, 1.0, 1.0)
+        drawText(-0.8, 0.8, f"Health: {top_spaceship_health}")
 
     glutSwapBuffers()
+
+
+
 
 # Initialize OpenGL
 def init():
