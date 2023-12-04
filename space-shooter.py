@@ -75,11 +75,11 @@ def update_bullets(bullets, spaceship_x, spaceship_y, scale):
         bullet[1] += bullet_speed
 
     # Check for collisions with the bottom spaceship
-    if check_collision(bullets, bottom_spaceship_x, -18, 0.5):
+    if check_collision(bullets, bottom_spaceship_x, -20, 0.5):
         print("Bottom spaceship hit!")
 
     # Check for collisions with the top spaceship
-    if check_collision(bullets, top_spaceship_x, -8, 0.5):
+    if check_collision(bullets, top_spaceship_x, -10, 0.5):
         print("Top spaceship hit")
 
 
