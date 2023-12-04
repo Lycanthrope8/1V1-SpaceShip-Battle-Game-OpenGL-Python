@@ -4,14 +4,12 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import math
 
-# Global variables to store spaceship positions
 bottom_spaceship_x = -8
 top_spaceship_x = 8
-bottom_bullets = []  # List to store bottom spaceship's bullets
-top_bullets = []  # List to store top spaceship's bullets
+bottom_bullets = []
+top_bullets = []
 bullet_speed = 0.1
 
-# Global variables to store player health
 bottom_player_health = 100
 top_player_health = 100
 
@@ -23,26 +21,22 @@ def draw_line(x1, y1, x2, y2, thickness):
     glEnd()
 
 thickness = 5
+
 def draw_spaceship(x, y, scale):
     global thickness
-    # Body
     draw_line(x - 2 * scale, y - 1 * scale, x + 2 * scale, y - 1 * scale, thickness)
     draw_line(x + 2 * scale, y - 1 * scale, x + 1.5 * scale, y + 1 * scale, thickness)
     draw_line(x + 1.5 * scale, y + 1 * scale, x - 1.5 * scale, y + 1 * scale, thickness)
     draw_line(x - 1.5 * scale, y + 1 * scale, x - 2 * scale, y - 1 * scale, thickness)
-
-    # Wings
     draw_line(x - 1.5 * scale, y - 1 * scale, x - 2.5 * scale, y - 1 * scale, thickness)
     draw_line(x + 1.5 * scale, y - 1 * scale, x + 2.5 * scale, y - 1 * scale, thickness)
-
-    # Cockpit
     draw_line(x - 0.5 * scale, y + 1 * scale, x + 0.5 * scale, y + 1 * scale, thickness)
     draw_line(x + 0.5 * scale, y + 1 * scale, x, y + 2 * scale, thickness)
 
 def draw_filled_circle(x_centre, y_centre, r):
     glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(x_centre, y_centre)  # Center of the circle
-    for i in range(361):  # 360 points on the circumference
+    glVertex2f(x_centre, y_centre)
+    for i in range(361):
         angle = math.radians(i)
         x = x_centre + r * math.cos(angle)
         y = y_centre + r * math.sin(angle)
@@ -50,86 +44,82 @@ def draw_filled_circle(x_centre, y_centre, r):
     glEnd()
 
 bullet_radius = 0.2
-def draw_bullet(x, y, radius, is_bottom):
-    if is_bottom:
-        glColor3f(1.0, 0.0, 0.0)  # Red color for bottom spaceship's bullets
-    else:
-        glColor3f(0.0, 0.0, 1.0)  # Blue color for top spaceship's bullets
+
+def draw_bullet(x, y, radius):
+    glColor3f(1.0, 1.0, 1.0)
     draw_filled_circle(x, y, radius)
 
-# ... (previous code)
+def check_collision(bullet, spaceship_x, spaceship_width):
+    bullet_x, bullet_y, is_bullet_bottom = bullet
+    if spaceship_x - spaceship_width/2 <= bullet_x <= spaceship_x + spaceship_width/2:
+        return True
+    return False
 
-def update_bullets(bullets):
+def update_bullets(bullets, spaceship_x, spaceship_width, is_bottom_player):
     global bullet_speed, bottom_player_health, top_player_health
+
+    new_bullets = []
 
     for bullet in bullets:
         bullet[1] += bullet_speed
 
-        # Check for collision with bottom spaceship
-        if bullet[2] and -18 <= bullet[1] <= -16:  # is_bottom and y-coordinate within spaceship range
-            if bottom_spaceship_x - 2.5 <= bullet[0] <= bottom_spaceship_x + 2.5:
-                bottom_player_health -= 5
-                bullets.remove(bullet)
-                # Display health for both players after a collision
-                print(f"Bottom Player Health: {bottom_player_health}")
-                print(f"Top Player Health: {top_player_health}")
-
-        # Check for collision with top spaceship
-        elif not bullet[2] and -8 <= bullet[1] <= -6:  # not is_bottom and y-coordinate within spaceship range
-            if top_spaceship_x - 2.5 <= bullet[0] <= top_spaceship_x + 2.5:
+        if check_collision(bullet, spaceship_x, spaceship_width):
+            if is_bottom_player:
                 top_player_health -= 5
-                bullets.remove(bullet)
                 # Display health for both players after a collision
                 print(f"Bottom Player Health: {bottom_player_health}")
                 print(f"Top Player Health: {top_player_health}")
+            else:
+                bottom_player_health -= 5
+                # Display health for both players after a collision
+                print(f"Bottom Player Health: {bottom_player_health}")
+                print(f"Top Player Health: {top_player_health}")
+        else:
+            new_bullets.append(bullet)
 
-# ... (rest of the code remains unchanged)
+        # Remove bullets that are out of bounds
+        if bullet[1] > 20 or bullet[1] < -20:
+            pass
 
+    return new_bullets
 
 def draw_bottom_spaceship():
-    glColor3f(1.0, 0.0, 0.0)  # Red color
+    glColor3f(1.0, 0.0, 0.0)
     draw_spaceship(bottom_spaceship_x, -18, 0.5)
 
 def draw_top_spaceship():
-    glColor3f(0.0, 0.0, 1.0)  # Blue color
+    glColor3f(0.0, 0.0, 1.0)
     glPushMatrix()
     glTranslatef(top_spaceship_x, 5, 0)
-    glScalef(1, -1, 1)  # Mirror along the y-axis
+    glScalef(1, -1, 1)
     glTranslatef(-top_spaceship_x, -5, 0)
     draw_spaceship(top_spaceship_x, -8, 0.5)
     glPopMatrix()
 
 def draw_bottom_spaceship_bullets():
     for bullet in bottom_bullets:
-        draw_bullet(bullet[0], bullet[1], bullet_radius, True)
+        draw_bullet(bullet[0], bullet[1], bullet_radius)
 
 def draw_top_spaceship_bullets():
-    glColor3f(0.0, 0.0, 1.0)  # Blue color
-
-    # Draw the bullets and update their positions
+    glColor3f(0.0, 0.0, 1.0)
     for bullet in top_bullets:
-        # Mirror the y-coordinate to account for the mirroring of the spaceship
-        mirrored_y = 2 * (5) - bullet[1]  # (y) should be opposite sign of the ships y
-        draw_bullet(bullet[0], mirrored_y, bullet_radius, False)
+        mirrored_y = 2 * (5) - bullet[1]
+        draw_bullet(bullet[0], mirrored_y, bullet_radius)
 
 def display():
-    global bottom_player_health, top_player_health
+    global bottom_player_health, top_player_health, bottom_bullets, top_bullets
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    # Draw bottom spaceship and bullets
     draw_bottom_spaceship()
     draw_bottom_spaceship_bullets()
 
-    # Draw top spaceship and bullets (mirror version)
     draw_top_spaceship()
     draw_top_spaceship_bullets()
 
-    update_bullets(bottom_bullets)
-    update_bullets(top_bullets)
-
-    
+    bottom_bullets = update_bullets(bottom_bullets, bottom_spaceship_x, 5.0, True)
+    top_bullets = update_bullets(top_bullets, top_spaceship_x, 5.0, False)
 
     glutSwapBuffers()
 
@@ -143,28 +133,17 @@ def reshape(width, height):
 def keyboard(key, x, y):
     global bottom_spaceship_x, top_spaceship_x, bottom_bullets, top_bullets
 
-    # Move bottom spaceship left (A key)
     if key == b'A' or key == b'a':
         bottom_spaceship_x = max(bottom_spaceship_x - 1, -19)
-
-    # Move bottom spaceship right (D key)
     elif key == b'D' or key == b'd':
         bottom_spaceship_x = min(bottom_spaceship_x + 1, 19)
-
-    # Move top spaceship left (Left arrow key)
     elif key == GLUT_KEY_LEFT:
         top_spaceship_x = max(top_spaceship_x - 1, -19)
-
-    # Move top spaceship right (Right arrow key)
     elif key == GLUT_KEY_RIGHT:
         top_spaceship_x = min(top_spaceship_x + 1, 19)
-
-    # Shoot bullet from bottom spaceship (W key)
     elif key == b'W' or key == b'w':
         bottom_bullets.append([bottom_spaceship_x, -18, True])
         glutPostRedisplay()
-
-    # Shoot bullet from top spaceship (Up arrow key)
     elif key == GLUT_KEY_UP:
         top_bullets.append([top_spaceship_x, -8, False])
         glutPostRedisplay()
@@ -173,7 +152,7 @@ def keyboard(key, x, y):
 
 def timer(value):
     glutPostRedisplay()
-    glutTimerFunc(16, timer, 0)  # 60 FPS
+    glutTimerFunc(16, timer, 0)
 
 def main():
     glutInit(sys.argv)
@@ -183,13 +162,13 @@ def main():
 
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
-    glutTimerFunc(0, timer, 0)  # Call timer function immediately
+    glutTimerFunc(0, timer, 0)
 
     glEnable(GL_DEPTH_TEST)
     glClearColor(0.0, 0.0, 0.0, 1.0)
 
     glutKeyboardFunc(keyboard)
-    glutSpecialFunc(keyboard)  # Register special key (arrow keys) callback
+    glutSpecialFunc(keyboard)
 
     glutMainLoop()
 
