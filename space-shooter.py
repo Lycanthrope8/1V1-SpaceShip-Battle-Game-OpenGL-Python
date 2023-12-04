@@ -68,19 +68,27 @@ def check_collision(bullets, spaceship_x, spaceship_y, scale):
 
     return False  # No collision
 
-def update_bullets(bullets, spaceship_x, spaceship_y, scale):
+def update_bullets(bullets, spaceship_x, spaceship_y, scale, spaceship_name):
     global bullet_speed
 
-    for bullet in bullets:
+    # List to store indices of bullets to be removed
+    bullets_to_remove = []
+
+    for i, bullet in enumerate(bullets):
         bullet[1] += bullet_speed
 
-    # Check for collisions with the bottom spaceship
-    if check_collision(bullets, bottom_spaceship_x, -20, 0.5):
-        print("Bottom spaceship hit!")
+        # Check for collisions with the spaceship
+        if (
+            bullet[1] >= spaceship_y - 1 * scale
+            and bullet[1] <= spaceship_y + 2 * scale
+            and spaceship_x - 2 * scale <= bullet[0] <= spaceship_x + 2 * scale
+        ):
+            bullets_to_remove.append(i)
+            print(f"{spaceship_name} spaceship hit!")
 
-    # Check for collisions with the top spaceship
-    if check_collision(bullets, top_spaceship_x, -10, 0.5):
-        print("Top spaceship hit")
+    # Remove bullets that collided with the spaceship
+    for index in reversed(bullets_to_remove):
+        del bullets[index]
 
 
 
@@ -111,8 +119,6 @@ def draw_top_spaceship_bullets():
         mirrored_y = 2 * (5) - bullet[1]  # (y) should be opposite sign of the ships y
         draw_bullet(bullet[0], mirrored_y, bullet_radius)
     
-
-
 def display():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
@@ -125,12 +131,10 @@ def display():
     draw_top_spaceship()
     draw_top_spaceship_bullets()
 
-    update_bullets(bottom_bullets, bottom_spaceship_x, -18, 0.5)
-    update_bullets(top_bullets, top_spaceship_x, -8, 0.5)
+    update_bullets(bottom_bullets, bottom_spaceship_x, -18, 0.5, "Bottom")
+    update_bullets(top_bullets, top_spaceship_x, -8, 0.5, "Top")
 
     glutSwapBuffers()
-
-
 # ... (rest of the code remains unchanged)
 
 def reshape(width, height):
