@@ -79,8 +79,8 @@ def update_bullets(bullets, spaceship_x, spaceship_y, scale, spaceship_name):
 
         # Check for collisions with the spaceship
         if (
-            bullet[1] >= spaceship_y - 1 * scale
-            and bullet[1] <= spaceship_y + 2 * scale
+            bullet[1] <= -spaceship_y + 2 * scale  # Adjusted for mirroring
+            and bullet[1] >= -spaceship_y - 1 * scale  # Adjusted for mirroring
             and spaceship_x - 2 * scale <= bullet[0] <= spaceship_x + 2 * scale
         ):
             bullets_to_remove.append(i)
@@ -89,6 +89,7 @@ def update_bullets(bullets, spaceship_x, spaceship_y, scale, spaceship_name):
     # Remove bullets that collided with the spaceship
     for index in reversed(bullets_to_remove):
         del bullets[index]
+
 
 
 
@@ -131,8 +132,8 @@ def display():
     draw_top_spaceship()
     draw_top_spaceship_bullets()
 
-    update_bullets(bottom_bullets, bottom_spaceship_x, -18, 0.5, "Bottom")
-    update_bullets(top_bullets, top_spaceship_x, -8, 0.5, "Top")
+    update_bullets(bottom_bullets, bottom_spaceship_x, -18, 0.5, "Top")
+    update_bullets(top_bullets, top_spaceship_x, -8, 0.5, "Bottom")
 
     glutSwapBuffers()
 # ... (rest of the code remains unchanged)
@@ -165,12 +166,12 @@ def keyboard(key, x, y):
 
     # Shoot bullet from bottom spaceship (W key)
     elif key == b'W' or key == b'w':
-        bottom_bullets.append([bottom_spaceship_x, -18])
+        bottom_bullets.append([bottom_spaceship_x, -17])
         glutPostRedisplay()
 
     # Shoot bullet from top spaceship (Up arrow key)
     elif key == GLUT_KEY_UP:
-        top_bullets.append([top_spaceship_x, -8])
+        top_bullets.append([top_spaceship_x, -7])
         glutPostRedisplay()
 
     glutPostRedisplay()
