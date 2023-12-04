@@ -53,12 +53,36 @@ def draw_bullet(x, y, radius):
     glColor3f(1.0, 1.0, 1.0)  # White color for the bullet
     draw_filled_circle(x, y, radius)
 
-def update_bullets(bullets):
+def check_collision(bullets, spaceship_x, spaceship_y, scale):
+    for bullet in bullets:
+        bullet_x, bullet_y = bullet[0], bullet[1]
+
+        # Check if the bullet is within the boundaries of the spaceship
+        if (
+            bullet_x >= spaceship_x - 2 * scale
+            and bullet_x <= spaceship_x + 2 * scale
+            and bullet_y >= spaceship_y - 1 * scale
+            and bullet_y <= spaceship_y + 2 * scale
+        ):
+            return True  # Collision detected
+
+    return False  # No collision
+
+def update_bullets(bullets, spaceship_x, spaceship_y, scale):
     global bullet_speed
+
     for bullet in bullets:
         bullet[1] += bullet_speed
 
-# ... (previous code)
+    # Check for collisions with the bottom spaceship
+    if check_collision(bullets, bottom_spaceship_x, -18, 0.5):
+        print("Bottom spaceship hit!")
+
+    # Check for collisions with the top spaceship
+    if check_collision(bullets, top_spaceship_x, -8, 0.5):
+        print("Top spaceship hit")
+
+
 
 def draw_bottom_spaceship():
     glColor3f(1.0, 0.0, 0.0)  # Red color
@@ -76,6 +100,7 @@ def draw_top_spaceship():
 def draw_bottom_spaceship_bullets():
     for bullet in bottom_bullets:
         draw_bullet(bullet[0], bullet[1], bullet_radius)
+    
 
 def draw_top_spaceship_bullets():
     glColor3f(0.0, 0.0, 1.0)  # Blue color
@@ -85,7 +110,7 @@ def draw_top_spaceship_bullets():
         # Mirror the y-coordinate to account for the mirroring of the spaceship
         mirrored_y = 2 * (5) - bullet[1]  # (y) should be opposite sign of the ships y
         draw_bullet(bullet[0], mirrored_y, bullet_radius)
-
+    
 
 
 def display():
@@ -100,10 +125,11 @@ def display():
     draw_top_spaceship()
     draw_top_spaceship_bullets()
 
-    update_bullets(bottom_bullets)
-    update_bullets(top_bullets)
+    update_bullets(bottom_bullets, bottom_spaceship_x, -18, 0.5)
+    update_bullets(top_bullets, top_spaceship_x, -8, 0.5)
 
     glutSwapBuffers()
+
 
 # ... (rest of the code remains unchanged)
 

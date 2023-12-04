@@ -49,39 +49,44 @@ def draw_bullet(x, y, radius):
     glColor3f(1.0, 1.0, 1.0)
     draw_filled_circle(x, y, radius)
 
-def check_collision(bullet, spaceship_x, spaceship_width):
-    bullet_x, bullet_y, is_bullet_bottom = bullet
-    if spaceship_x - spaceship_width/2 <= bullet_x <= spaceship_x + spaceship_width/2:
-        return True
-    return False
+def check_collision(bullet, spaceship_x, spaceship_width, spaceship_y, spaceship_height):
+    bullet_x, bullet_y, _ = bullet
+    return (
+        bullet_x >= spaceship_x - spaceship_width / 2
+        and bullet_x <= spaceship_x + spaceship_width / 2
+        and bullet_y >= spaceship_y - spaceship_height / 2
+        and bullet_y <= spaceship_y + spaceship_height / 2
+    )
 
-def update_bullets(bullets, spaceship_x, spaceship_width, is_bottom_player):
+def update_bullets(bullets, spaceship_x, spaceship_width, spaceship_y, spaceship_height, is_bottom_player):
     global bullet_speed, bottom_player_health, top_player_health
 
     new_bullets = []
 
     for bullet in bullets:
-        bullet[1] += bullet_speed
+        bullet[1] += bullet_speed * bullet[2]  # Multiply bullet_speed by the direction
 
-        if check_collision(bullet, spaceship_x, spaceship_width):
-            if is_bottom_player:
-                top_player_health -= 5
+        # Check collision only if the bullet is within the y-range of the spaceship
+        if spaceship_y - spaceship_height / 2 <= bullet[1] <= spaceship_y + spaceship_height / 2:
+            if check_collision(bullet, spaceship_x, spaceship_width, spaceship_y, spaceship_height):
+                if is_bottom_player:
+                    top_player_health -= 5
+                else:
+                    bottom_player_health -= 5
+
                 # Display health for both players after a collision
                 print(f"Bottom Player Health: {bottom_player_health}")
                 print(f"Top Player Health: {top_player_health}")
             else:
-                bottom_player_health -= 5
-                # Display health for both players after a collision
-                print(f"Bottom Player Health: {bottom_player_health}")
-                print(f"Top Player Health: {top_player_health}")
-        else:
-            new_bullets.append(bullet)
-
-        # Remove bullets that are out of bounds
-        if bullet[1] > 20 or bullet[1] < -20:
-            pass
+                new_bullets.append(bullet)
 
     return new_bullets
+
+
+
+
+
+
 
 def draw_bottom_spaceship():
     glColor3f(1.0, 0.0, 0.0)
@@ -118,8 +123,9 @@ def display():
     draw_top_spaceship()
     draw_top_spaceship_bullets()
 
-    bottom_bullets = update_bullets(bottom_bullets, bottom_spaceship_x, 5.0, True)
-    top_bullets = update_bullets(top_bullets, top_spaceship_x, 5.0, False)
+    bottom_bullets = update_bullets(bottom_bullets, bottom_spaceship_x, 5.0, -18, 0.5, True)
+    top_bullets = update_bullets(top_bullets, top_spaceship_x, 5.0, -8, 0.5, False)
+
 
     glutSwapBuffers()
 
@@ -142,11 +148,11 @@ def keyboard(key, x, y):
     elif key == GLUT_KEY_RIGHT:
         top_spaceship_x = min(top_spaceship_x + 1, 19)
     elif key == b'W' or key == b'w':
-        bottom_bullets.append([bottom_spaceship_x, -18, True])
-        glutPostRedisplay()
+        bottom_bullets.append([bottom_spaceship_x, -18, 1])  # 1 represents upward direction
     elif key == GLUT_KEY_UP:
-        top_bullets.append([top_spaceship_x, -8, False])
-        glutPostRedisplay()
+        top_bullets.append([top_spaceship_x, -8, -1])  # -1 represents downward direction
+
+
 
     glutPostRedisplay()
 
