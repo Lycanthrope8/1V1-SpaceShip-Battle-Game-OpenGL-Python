@@ -222,6 +222,7 @@ def drawScene():
     # Display "Paused" text or match result in the middle of the window
     if is_game_paused:
         result_text = "Paused"
+        drawMatchResult(result_text)
     elif match_result is not None:
         result_text = match_result
         drawMatchResult(result_text)
