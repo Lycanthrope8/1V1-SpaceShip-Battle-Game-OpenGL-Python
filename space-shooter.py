@@ -62,11 +62,15 @@ def drawSpaceship(x, y, color1, color2, facing_up=True):
     glVertex2f(x + 0.04 * scale_factor, y + direction * 0.04 * scale_factor)  # Top-right vertex
     glEnd()
 
-# Function to draw a bullet using midpoint circle algorithm
+# Function to draw a bullet using midpoint circle algorithm with GL_POINTS
 def drawBullet(x, y, radius):
     num_segments = 100  # You can adjust this value for a smoother circle
-    glBegin(GL_TRIANGLE_FAN)
-    glVertex2f(x, y)  # Center of circle
+    # Draw center point
+    glBegin(GL_POINTS)
+    glVertex2f(x, y)
+    glEnd()
+    # Draw points along the circle using midpoint circle algorithm
+    glBegin(GL_POINTS)
     for i in range(num_segments + 1):
         theta = i * (2.0 * math.pi / num_segments)
         bullet_x = x + radius * math.cos(theta)
