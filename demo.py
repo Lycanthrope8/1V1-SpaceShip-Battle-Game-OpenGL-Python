@@ -156,14 +156,6 @@ def drawBox(x, y, size):
     glVertex2f(x - half_size, y - half_size)
     glEnd()
 
-# Function to spawn the box at a random position in the middle of the window
-def spawnBox(value):
-    global box_position
-
-    # Generate random position within the middle region of the window
-    box_position = [random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)]
-
-    glutPostRedisplay()
 
 # Function to draw a line using the midpoint line algorithm
 def drawMidpointLine(x0, y0, x1, y1):
@@ -422,8 +414,7 @@ def main():
     glutSpecialUpFunc(specialKeysUp)
     glutTimerFunc(16, updateGameLogic, 0)
 
-    # Schedule the appearance of the box after 20 seconds
-    glutTimerFunc(20000, spawnBox, 0)
+    
 
     glutMainLoop()
 
