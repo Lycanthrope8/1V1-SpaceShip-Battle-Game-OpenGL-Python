@@ -2,6 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import math
+import random
 
 # Window size
 window_width = 800
@@ -16,9 +17,16 @@ spaceship_speed = 0.01
 bottom_spaceship_health = 100
 top_spaceship_health = 100
 match_result = None
+
 # Bullet properties
 bottom_bullets = []
 top_bullets = []
+
+# Box properties
+box_size = 0.1
+box_position = [0.0, 0.0]
+show_box = False
+box_timer = 0
 
 # Key states
 key_states = {'a': False, 'd': False, 'left': False, 'right': False, 'w': False, 'up': False}
@@ -62,14 +70,14 @@ def drawSpaceship(x, y, color1, color2, facing_up=True):
     glVertex2f(x + 0.04 * scale_factor, y + direction * 0.04 * scale_factor)  # Top-right vertex
     glEnd()
 
+
 # Function to draw a bullet using midpoint circle algorithm with GL_POINTS
 def drawBullet(x, y, radius):
-    num_segments = 100  # You can adjust this value for a smoother circle
-    # Draw center point
+    num_segments = 100
     glBegin(GL_POINTS)
     glVertex2f(x, y)
     glEnd()
-    # Draw points along the circle using midpoint circle algorithm
+
     glBegin(GL_POINTS)
     for i in range(num_segments + 1):
         theta = i * (2.0 * math.pi / num_segments)
@@ -78,12 +86,23 @@ def drawBullet(x, y, radius):
         glVertex2f(bullet_x, bullet_y)
     glEnd()
 
+# Function to draw the box using midpoint line algorithm with GL_POINTS
+def drawBox():
+    glColor3f(1.0, 1.0, 0.0)  # Yellow color for the box
+    glBegin(GL_POINTS)
+    x, y, radius = box_position[0], box_position[1], box_size / 2
+    num_segments = 100
+    for i in range(num_segments + 1):
+        theta = i * (2.0 * math.pi / num_segments)
+        end_x = x + radius * math.cos(theta)
+        end_y = y + radius * math.sin(theta)
+        glVertex2f(end_x, end_y)
+    glEnd()
 
 # Function to draw the match result
 def drawMatchResult(result_text):
     glColor3f(1.0, 1.0, 1.0)
-    drawText(-0.08, 0.0, result_text)  # Adjust position as needed
-
+    drawText(-0.08, 0.0, result_text)
 
 # Function to draw text on the screen
 def drawText(x, y, text):
@@ -95,16 +114,16 @@ def drawText(x, y, text):
 is_game_paused = False
 
 # Function to handle key press events
-# Function to handle key press events
 def keyboard(key, x, y):
     global key_states, is_game_paused
 
     key = key.decode("utf-8")
 
     if key == 'p':
-        is_game_paused = not is_game_paused  # Toggle pause state
-    elif key == '\x1b':  # Check for 'Escape' key
-        glutLeaveMainLoop()  # Close the window
+        is_game_paused = not is_game_paused
+    elif key == '\x1b':
+        glutLeaveMainLoop()
+
     elif key in key_states and not is_game_paused:
         key_states[key] = True
 
@@ -147,20 +166,33 @@ def specialKeysUp(key, x, y):
 
     glutPostRedisplay()
 
-# Function to check collision between a bullet and a spaceship
-def checkCollision(bulletX, bulletY, spaceshipX, spaceshipY):
+# Function to check collision between a bullet and the box
+def checkBoxCollision(bulletX, bulletY):
     return (
-        spaceshipX - 0.1 < bulletX < spaceshipX + 0.1 and
-        spaceshipY - 0.1 < bulletY < spaceshipY + 0.1
+        box_position[0] - box_size / 2 < bulletX < box_position[0] + box_size / 2 and
+        box_position[1] - box_size / 2 < bulletY < box_position[1] + box_size / 2
     )
+
+# Function to respawn the box in a new random position
+def respawnBox():
+    global box_timer, show_box
+    box_position[0] = random.uniform(-0.9, 0.9)
+    box_position[1] = random.uniform(-0.9, 0.9)
+    show_box = True
+    box_timer = 0
 
 # Function to update game logic
 def updateGameLogic(value):
     global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x
     global bottom_bullet_cooldown, top_bullet_cooldown, bottom_spaceship_health, top_spaceship_health
-    global is_game_paused, match_result
+    global is_game_paused, match_result, box_position, show_box, box_timer
 
     if not is_game_paused:
+        if box_timer >= 500:  # Display the box after 10 seconds (10 seconds * 60 frames per second)
+            respawnBox()
+
+        box_timer += 1
+
         # Update bottom spaceship position
         if key_states['a']:
             bottom_spaceship_x = max(bottom_spaceship_x - spaceship_speed, -1.0)
@@ -176,12 +208,12 @@ def updateGameLogic(value):
         # Shoot bullet from bottom spaceship (W key)
         if key_states['w'] and bottom_bullet_cooldown <= 0:
             bottom_bullets.append([bottom_spaceship_x, -0.8])
-            bottom_bullet_cooldown = 10  # Cooldown in frames
+            bottom_bullet_cooldown = 10
 
         # Shoot bullet from top spaceship (Up arrow key)
         if key_states['up'] and top_bullet_cooldown <= 0:
             top_bullets.append([top_spaceship_x, 0.8])
-            top_bullet_cooldown = 10  # Cooldown in frames
+            top_bullet_cooldown = 10
 
         # Update bottom bullets
         for bullet in bottom_bullets:
@@ -191,18 +223,19 @@ def updateGameLogic(value):
         for bullet in top_bullets:
             bullet[1] -= 0.01
 
-        # Check collisions
+        # Check collisions with the box for bottom spaceship bullets
         for bullet in bottom_bullets:
-            if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
-                # print("Spaceship 2 hit!")
-                bottom_bullets.remove(bullet)
-                top_spaceship_health -= 2
+            if checkBoxCollision(bullet[0], bullet[1]):
+                bottom_spaceship_health += 20
+                show_box = False
+                respawnBox()
 
+        # Check collisions with the box for top spaceship bullets
         for bullet in top_bullets:
-            if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
-                # print("Spaceship 1 hit!")
-                top_bullets.remove(bullet)
-                bottom_spaceship_health -= 2
+            if checkBoxCollision(bullet[0], bullet[1]):
+                top_spaceship_health += 20
+                show_box = False
+                respawnBox()
 
         # Check for the end of the game
         if bottom_spaceship_health <= 0:
@@ -224,7 +257,6 @@ def updateGameLogic(value):
 def drawScene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-    # Display "Paused" text or match result in the middle of the window
     if is_game_paused:
         result_text = "Paused"
         drawMatchResult(result_text)
@@ -232,34 +264,24 @@ def drawScene():
         result_text = match_result
         drawMatchResult(result_text)
     else:
-        # Spaceship 1 (Green and Yellow)
         drawSpaceship(bottom_spaceship_x, -0.9, [0.0, 1.0, 0.0], [1.0, 1.0, 0.0])
-
-        # Bullets of Spaceship 1
         glColor3f(0.0, 1.0, 0.0)
         for bullet in bottom_bullets:
-            drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
+            drawBullet(bullet[0], bullet[1], 0.01)
 
-        # Spaceship 2 (Blue and Cyan, facing downwards)
         drawSpaceship(top_spaceship_x, 0.9, [0.0, 0.0, 1.0], [0.0, 1.0, 1.0], facing_up=False)
-
-        # Bullets of Spaceship 2
         glColor3f(0.0, 0.0, 1.0)
         for bullet in top_bullets:
-            drawBullet(bullet[0], bullet[1], 0.01)  # Adjust the radius as needed
+            drawBullet(bullet[0], bullet[1], 0.01)
 
-        # Draw health for Spaceship 1
         glColor3f(1.0, 1.0, 1.0)
         drawText(-0.8, -0.9, f"Health: {bottom_spaceship_health}")
-
-        # Draw health for Spaceship 2
-        glColor3f(1.0, 1.0, 1.0)
         drawText(-0.8, 0.8, f"Health: {top_spaceship_health}")
 
+        if show_box:
+            drawBox()
+
     glutSwapBuffers()
-
-
-
 
 # Initialize OpenGL
 def init():
