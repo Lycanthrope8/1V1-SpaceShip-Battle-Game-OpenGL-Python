@@ -44,34 +44,83 @@ box_timer = None  # Timer to track the box respawn time
 # Function to draw a spaceship
 def drawSpaceship(x, y, color1, color2, facing_up=True):
     direction = 1 if facing_up else -1
-    scale_factor = 0.8
+    scale_factor = 0.8  # Adjust the scale factor to make the spaceship smaller
 
-    glBegin(GL_QUADS)
+    def drawLine(x0, y0, x1, y1):
+        # Midpoint line algorithm
+        dx = x1 - x0
+        dy = y1 - y0
+        d = dy - (dx / 2)
+        x = x0
+        y = y0
+
+        # Plotting the line
+        while x < x1:
+            glVertex2f(x, y)
+            x += 1
+            if d < 0:
+                d = d + dy
+            else:
+                d += (dy - dx)
+                y += 1
+
     glColor3f(color1[0], color1[1], color1[2])
-    glVertex2f(x - 0.04 * scale_factor, y - direction * 0.08 * scale_factor)
-    glVertex2f(x + 0.04 * scale_factor, y - direction * 0.08 * scale_factor)
+    glBegin(GL_POINTS)
+    glColor3f(color1[0], color1[1], color1[2])
+    glVertex2f(x - 0.04 * scale_factor, y - direction *
+               0.08 * scale_factor)  # Point 1
+    glColor3f(color1[0], color1[1], color1[2])
+    glVertex2f(x + 0.04 * scale_factor, y - direction *
+               0.08 * scale_factor)  # Point 2
     glColor3f(color2[0], color2[1], color2[2])
-    glVertex2f(x + 0.04 * scale_factor, y + direction * 0.08 * scale_factor)
-    glVertex2f(x - 0.04 * scale_factor, y + direction * 0.08 * scale_factor)
+    glVertex2f(x + 0.04 * scale_factor, y + direction *
+               0.08 * scale_factor)  # Point 3
+    glColor3f(color2[0], color2[1], color2[2])
+    glVertex2f(x - 0.04 * scale_factor, y + direction *
+               0.08 * scale_factor)  # Point 4
+    # Drawing spaceship parts using the drawLine function
+    # Adjust coordinates according to your spaceship design
+    drawLine(x - 0.04 * scale_factor, y - direction * 0.08 * scale_factor,
+             x + 0.04 * scale_factor, y - direction * 0.08 * scale_factor)
+    # Add other lines for spaceship body, cockpit, and wings
+
     glEnd()
 
-    glBegin(GL_TRIANGLES)
-    glVertex2f(x - 0.016 * scale_factor, y + direction * 0.08 * scale_factor)
-    glVertex2f(x + 0.016 * scale_factor, y + direction * 0.08 * scale_factor)
-    glVertex2f(x, y + direction * 0.12 * scale_factor)
+    glColor3f(color2[0], color2[1], color2[2])
+    glBegin(GL_POINTS)
+    glVertex2f(x - 0.016 * scale_factor, y + direction *
+               0.08 * scale_factor)  # Top vertex
+    glVertex2f(x + 0.016 * scale_factor, y + direction *
+               0.08 * scale_factor)  # Top-right vertex
+    glVertex2f(x, y + direction * 0.12 * scale_factor)  # Tip vertex
+    # Drawing cockpit using drawLine
+    # Adjust coordinates as needed
+    drawLine(x - 0.016 * scale_factor, y + direction * 0.08 * scale_factor,
+             x + 0.016 * scale_factor, y + direction * 0.08 * scale_factor)
+    # Add other lines for cockpit
+
     glEnd()
 
-    glBegin(GL_TRIANGLES)
-    glVertex2f(x - 0.04 * scale_factor, y - direction * 0.04 * scale_factor)
-    glVertex2f(x - 0.08 * scale_factor, y - direction * 0.08 * scale_factor)
-    glVertex2f(x - 0.04 * scale_factor, y + direction * 0.04 * scale_factor)
+    # Left wing
+    glBegin(GL_POINTS)
+    glVertex2f(x - 0.04 * scale_factor, y - direction *
+               0.04 * scale_factor)  # Bottom-left vertex
+    glVertex2f(x - 0.08 * scale_factor, y - direction *
+               0.08 * scale_factor)  # Top-left vertex
+    glVertex2f(x - 0.04 * scale_factor, y + direction *
+               0.04 * scale_factor)  # Top-right vertex
     glEnd()
 
-    glBegin(GL_TRIANGLES)
-    glVertex2f(x + 0.04 * scale_factor, y - direction * 0.04 * scale_factor)
-    glVertex2f(x + 0.08 * scale_factor, y - direction * 0.08 * scale_factor)
-    glVertex2f(x + 0.04 * scale_factor, y + direction * 0.04 * scale_factor)
+    # Right wing
+    glBegin(GL_POINTS)
+    glVertex2f(x + 0.04 * scale_factor, y - direction *
+               0.04 * scale_factor)  # Bottom-right vertex
+    glVertex2f(x + 0.08 * scale_factor, y - direction *
+               0.08 * scale_factor)  # Top-left vertex
+    glVertex2f(x + 0.04 * scale_factor, y + direction *
+               0.04 * scale_factor)  # Top-right vertex
     glEnd()
+
 
 # Function to draw a bullet using midpoint circle algorithm with GL_POINTS
 def drawBullet(x, y, radius):

@@ -17,31 +17,19 @@ spaceship_speed = 0.01
 bottom_spaceship_health = 100
 top_spaceship_health = 100
 match_result = None
-
 # Bullet properties
 bottom_bullets = []
 top_bullets = []
 
 # Key states
-key_states = {'a': False, 'd': False, 'left': False, 'right': False, 'w': False, 'up': False}
+key_states = {'a': False, 'd': False, 'left': False,
+              'right': False, 'w': False, 'up': False}
 
 # Bullet cooldown
 bottom_bullet_cooldown = 0
 top_bullet_cooldown = 0
 
-# Box properties
 
-box_respawn_time = 20  # Respawn time for the box in seconds
-box_timer = 0
-
-# Add these lines among your other global variables
-box_position = None
-box_size = 0.1  # Adjust the size of the box as needed
-box_health_bonus = 20  # Health bonus when hitting the box
-box_spawn_interval = 20000  # Box respawn interval in milliseconds (20 seconds)
-box_timer = None  # Timer to track the box respawn time
-
-# Function to draw a spaceship
 def drawSpaceship(x, y, color1, color2, facing_up=True):
     direction = 1 if facing_up else -1
     scale_factor = 0.8  # Adjust the scale factor to make the spaceship smaller
@@ -121,22 +109,52 @@ def drawSpaceship(x, y, color1, color2, facing_up=True):
                0.04 * scale_factor)  # Top-right vertex
     glEnd()
 
+    # Continue with wings and other parts as needed
 
-# Function to draw a bullet using midpoint circle algorithm with GL_POINTS
+
 def drawBullet(x, y, radius):
-    num_segments = 100
+    num_segments = 100  # You can adjust this value for a smoother circle
+
     glBegin(GL_POINTS)
-    glVertex2f(x, y)
+
+    def plot_circle_points(cx, cy, x, y):
+        # Plot points in all octants
+        glVertex2f(cx + x, cy + y)
+        glVertex2f(cx - x, cy + y)
+        glVertex2f(cx + x, cy - y)
+        glVertex2f(cx - x, cy - y)
+        glVertex2f(cx + y, cy + x)
+        glVertex2f(cx - y, cy + x)
+        glVertex2f(cx + y, cy - x)
+        glVertex2f(cx - y, cy - x)
+
+    x = 0
+    y = radius
+    d = 1 - radius
+    delta_e = 3
+    delta_se = -2 * radius + 5
+
+    plot_circle_points(x, y, x, y)
+
+    while y > x:
+        if d < 0:
+            d += delta_e
+            delta_e += 2
+            delta_se += 2
+        else:
+            d += delta_se
+            delta_se += 4
+            delta_e += 2
+            y -= 1
+        x += 1
+        plot_circle_points(0, 0, x, y)
+
     glEnd()
-    glBegin(GL_POINTS)
-    for i in range(num_segments + 1):
-        theta = i * (2.0 * math.pi / num_segments)
-        bullet_x = x + radius * math.cos(theta)
-        bullet_y = y + radius * math.sin(theta)
-        glVertex2f(bullet_x, bullet_y)
-    glEnd()
+
 
 # Function to draw a box using midpoint line algorithm
+
+
 def drawBox(x, y, size):
     # Calculate half size for convenience
     half_size = size / 2
@@ -157,6 +175,8 @@ def drawBox(x, y, size):
     glEnd()
 
 # Function to spawn the box at a random position in the middle of the window
+
+
 def spawnBox(value):
     global box_position
 
@@ -166,6 +186,8 @@ def spawnBox(value):
     glutPostRedisplay()
 
 # Function to draw a line using the midpoint line algorithm
+
+
 def drawMidpointLine(x0, y0, x1, y1):
     dx = x1 - x0
     dy = y1 - y0
@@ -192,21 +214,26 @@ def drawMidpointLine(x0, y0, x1, y1):
         glVertex2f(x, y)
     glEnd()
 
-# Function to draw the match result
+
 def drawMatchResult(result_text):
     glColor3f(1.0, 1.0, 1.0)
-    drawText(-0.08, 0.0, result_text)
+    drawText(-0.08, 0.0, result_text)  # Adjust position as needed
+
 
 # Function to draw text on the screen
 def drawText(x, y, text):
     glRasterPos2f(x, y)
     for character in text:
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, ctypes.c_int(ord(character)))
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18,ctypes.c_int(ord(character)))
+
 
 # Pause state
 is_game_paused = False
 
 # Function to handle key press events
+# Function to handle key press events
+
+
 def keyboard(key, x, y):
     global key_states, is_game_paused
 
@@ -222,6 +249,8 @@ def keyboard(key, x, y):
     glutPostRedisplay()
 
 # Function to handle key release events
+
+
 def keyboardUp(key, x, y):
     global key_states
 
@@ -233,6 +262,8 @@ def keyboardUp(key, x, y):
     glutPostRedisplay()
 
 # Function to handle special key press events
+
+
 def specialKeys(key, x, y):
     global key_states, is_game_paused
 
@@ -246,6 +277,8 @@ def specialKeys(key, x, y):
     glutPostRedisplay()
 
 # Function to handle special key release events
+
+
 def specialKeysUp(key, x, y):
     global key_states
 
@@ -259,31 +292,27 @@ def specialKeysUp(key, x, y):
     glutPostRedisplay()
 
 # Function to check collision between a bullet and a spaceship
+
+
 def checkCollision(bulletX, bulletY, spaceshipX, spaceshipY):
     return (
         spaceshipX - 0.1 < bulletX < spaceshipX + 0.1 and
         spaceshipY - 0.1 < bulletY < spaceshipY + 0.1
     )
 
-# Add a function to check collision with the box
-def checkCollisionWithBox(bulletX, bulletY):
-    if box_position is not None:
-        return (
-            box_position[0] - box_size / 2 < bulletX < box_position[0] + box_size / 2 and
-            box_position[1] - box_size / 2 < bulletY < box_position[1] + box_size / 2
-        )
-    return False
-
 # Function to update game logic
+
+
 def updateGameLogic(value):
     global bottom_bullets, top_bullets, bottom_spaceship_x, top_spaceship_x
     global bottom_bullet_cooldown, top_bullet_cooldown, bottom_spaceship_health, top_spaceship_health
-    global is_game_paused, match_result, box_position, box_timer
+    global is_game_paused, match_result
 
     if not is_game_paused:
         # Update bottom spaceship position
         if key_states['a']:
-            bottom_spaceship_x = max(bottom_spaceship_x - spaceship_speed, -1.0)
+            bottom_spaceship_x = max(
+                bottom_spaceship_x - spaceship_speed, -1.0)
         if key_states['d']:
             bottom_spaceship_x = min(bottom_spaceship_x + spaceship_speed, 1.0)
 
@@ -311,32 +340,18 @@ def updateGameLogic(value):
         for bullet in top_bullets:
             bullet[1] -= 0.01
 
-        # Check if it's time to spawn or respawn the box
-        if box_timer is None or glutGet(GLUT_ELAPSED_TIME) - box_timer > box_spawn_interval:
-            # Spawn the box at a random position in the middle of the window
-            box_position = [random.uniform(-0.5, 0.5), random.uniform(-0.5, 0.5)]
-            box_timer = glutGet(GLUT_ELAPSED_TIME)  # Reset the timer for the next respawn
-
-        # Check collisions with bullets for bottom spaceship
+        # Check collisions
         for bullet in bottom_bullets:
             if checkCollision(bullet[0], bullet[1], top_spaceship_x, 0.9):
+                # print("Spaceship 2 hit!")
                 bottom_bullets.remove(bullet)
                 top_spaceship_health -= 2
-            elif checkCollisionWithBox(bullet[0], bullet[1]):
-                bottom_bullets.remove(bullet)
-                bottom_spaceship_health += box_health_bonus
-                box_position = None  # Box disappears after being hit
-                box_timer = glutGet(GLUT_ELAPSED_TIME)  # Reset the timer
 
         for bullet in top_bullets:
             if checkCollision(bullet[0], bullet[1], bottom_spaceship_x, -0.9):
+                # print("Spaceship 1 hit!")
                 top_bullets.remove(bullet)
                 bottom_spaceship_health -= 2
-            elif checkCollisionWithBox(bullet[0], bullet[1]):
-                top_bullets.remove(bullet)
-                top_spaceship_health += box_health_bonus
-                box_position = None  # Box disappears after being hit
-                box_timer = glutGet(GLUT_ELAPSED_TIME)  # Reset the timer
 
         # Check for the end of the game
         if bottom_spaceship_health <= 0:
@@ -350,15 +365,13 @@ def updateGameLogic(value):
 
         if top_bullet_cooldown > 0:
             top_bullet_cooldown -= 1
-    # Respawn the box after the respawn time has passed
-    if glutGet(GLUT_ELAPSED_TIME) - box_timer > box_respawn_time * 1000:
-        box_position = [random.uniform(-0.8, 0.8), random.uniform(-0.8, 0.8)]
-        box_timer = glutGet(GLUT_ELAPSED_TIME)  # Reset the timer
 
     glutTimerFunc(16, updateGameLogic, 0)
     glutPostRedisplay()
 
 # Function to draw the scene
+
+
 def drawScene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
@@ -371,19 +384,23 @@ def drawScene():
         drawMatchResult(result_text)
     else:
         # Spaceship 1 (Green and Yellow)
-        drawSpaceship(bottom_spaceship_x, -0.9, [0.0, 1.0, 0.0], [1.0, 1.0, 0.0])
+        drawSpaceship(bottom_spaceship_x, -0.9,
+                      [0.0, 1.0, 0.0], [1.0, 1.0, 0.0])
 
         # Bullets of Spaceship 1
         glColor3f(0.0, 1.0, 0.0)
         for bullet in bottom_bullets:
+            # Adjust the radius as needed
             drawBullet(bullet[0], bullet[1], 0.01)
 
         # Spaceship 2 (Blue and Cyan, facing downwards)
-        drawSpaceship(top_spaceship_x, 0.9, [0.0, 0.0, 1.0], [0.0, 1.0, 1.0], facing_up=False)
+        drawSpaceship(top_spaceship_x, 0.9, [0.0, 0.0, 1.0], [
+                      0.0, 1.0, 1.0], facing_up=False)
 
         # Bullets of Spaceship 2
         glColor3f(0.0, 0.0, 1.0)
         for bullet in top_bullets:
+            # Adjust the radius as needed
             drawBullet(bullet[0], bullet[1], 0.01)
 
         # Draw health for Spaceship 1
@@ -394,10 +411,8 @@ def drawScene():
         glColor3f(1.0, 1.0, 1.0)
         drawText(-0.8, 0.8, f"Health: {top_spaceship_health}")
 
-    if box_position is not None:
-        drawBox(box_position[0], box_position[1], box_size)
-
     glutSwapBuffers()
+
 
 # Initialize OpenGL
 def init():
@@ -407,9 +422,25 @@ def init():
     gluOrtho2D(-1.0, 1.0, -1.0, 1.0)
 
 # Main function
+
+
+def display():
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    drawBullet(0, 0, 50)
+    glutSwapBuffers()
+
+
+def reshape(width, height):
+    glViewport(0, 0, width, height)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluOrtho2D(-width/2, width/2, -height/2, height/2)
+    glMatrixMode(GL_MODELVIEW)
+
+
 def main():
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
+    # glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA)
     glutInitWindowSize(window_width, window_height)
     glutCreateWindow(b"Spaceship Shooter")
 
@@ -422,11 +453,16 @@ def main():
     glutSpecialUpFunc(specialKeysUp)
     glutTimerFunc(16, updateGameLogic, 0)
 
-    # Schedule the appearance of the box after 20 seconds
-    glutTimerFunc(20000, spawnBox, 0)
-
     glutMainLoop()
+
+    glutInit()
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+    # glutCreateWindow("Bullet Drawing")
+    glutReshapeWindow(500, 500)
+    glutDisplayFunc(display)
+    glutReshapeFunc(reshape)
+    # glutMainLoop()
+
 
 if __name__ == "__main__":
     main()
-
