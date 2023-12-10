@@ -121,7 +121,6 @@ def drawSpaceship(x, y, color1, color2, facing_up=True):
                0.04 * scale_factor)  # Top-right vertex
     glEnd()
 
-
 # Function to draw a bullet using midpoint circle algorithm with GL_POINTS
 def drawBullet(x, y, radius):
     num_segments = 100
@@ -413,8 +412,6 @@ def main():
     glutSpecialFunc(specialKeys)
     glutSpecialUpFunc(specialKeysUp)
     glutTimerFunc(16, updateGameLogic, 0)
-
-    
 
     glutMainLoop()
 

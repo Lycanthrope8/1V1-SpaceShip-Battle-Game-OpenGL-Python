@@ -1,153 +1,108 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
+from OpenGL.GLU import *
 import math
 
-def dezone(x, y, zone):
-    if zone == 0:
-        return x, y
-    elif zone == 1:
-        return y, x
-    elif zone == 2:
-        return -y, x
-    elif zone == 3:
-        return -x, y
-    elif zone == 4:
-        return -x, -y
-    elif zone == 5:
-        return -y, -x
-    elif zone == 6:
-        return y, -x
-    elif zone == 7:
-        return x, -y
-    else:
-        print("problem")
-        return x, y
+def circlePoints(x, y, x0, y0):
+    draw_points(x + x0, y + y0)
+    draw_points(y + x0, x + y0)
+    draw_points(y + x0, -x + y0)
+    draw_points(x + x0, -y + y0)
+    draw_points(-x + x0, -y + y0)
+    draw_points(-y + x0, -x + y0)
+    draw_points(-y + x0, x + y0)
+    draw_points(-x + x0, y + y0)
 
-def zone_fnc(x1, y1, x2, y2):
-    dx = x2 - x1
-    dy = y2 - y1
-    if abs(dx) >= abs(dy) and (dx >= 0 and dy >= 0):
-        zone = 0
-        return x1, y1, x2, y2, zone
-    elif abs(dy) > abs(dx) and (dx >= 0 and dy >= 0):
-        zone = 1
-        return y1, x1, y2, x2, zone
-    elif abs(dy) > abs(dx) and (dx < 0 and dy >= 0):
-        zone = 2
-        return y1, -x1, y2, -x2, zone
-    elif abs(dx) >= abs(dy) and (dx < 0 and dy >= 0):
-        zone = 3
-        return -x1, y1, -x2, y2, zone
-    elif abs(dx) >= abs(dy) and (dx < 0 and dy < 0):
-        zone = 4
-        return -x1, -y1, -x2, -y2, zone
-    elif abs(dy) > abs(dx) and (dx < 0 and dy < 0):
-        zone = 5
-        return -y1, -x1, -y2, -x2, zone
-    elif abs(dy) > abs(dx) and (dx >= 0 and dy < 0):
-        zone = 6
-        return -y1, x1, -y2, x2, zone
-    elif abs(dx) >= abs(dy) and (dx >= 0 and dy < 0):
-        zone = 7
-        return x1, -y1, x2, -y2, zone
-
-def mid_line(x1, y1, x2, y2):
-    lst = []
-    zone = 0
-    x1 , y1 , x2, y2, zone = zone_fnc(x1, y1, x2, y2)
-    dx = x2 - x1
-    dy = y2 - y1
-    d = 2*dy - dx
-    incE = 2*dy
-    incNE = 2*(dy-dx)
-    y = y1
-    x = x1
-    while (x <= x2):
-        x_t , y_t = dezone(x , y , zone)
-        lst.append((x_t, y_t))
-        if (d > 0):
-            y += 1
-            d += incNE
-        else:
-            d += incE
-        x += 1
-    return lst
-
-def draw_rectangle(x1, y1, x2, y2):
-    points = []
-    # Draw top side
-    points.extend(mid_line(x1, y1, x2, y1))
-    # Draw right side
-    points.extend(mid_line(x2, y1, x2, y2))
-    # Draw bottom side
-    points.extend(mid_line(x2, y2, x1, y2))
-    # Draw left side
-    points.extend(mid_line(x1, y2, x1, y1))
-
-    glBegin(GL_POINTS)
-    for point in points:
-        glVertex2f(point[0], point[1])
-    glEnd()
-    glFlush()
-
-
-
-def draw_circle(center_x, center_y, radius):
-    points = []
+def midpointLineCircle(radius, x0, y0):
+    d = 1 - radius
     x = 0
     y = radius
-    d = 1 - radius
 
-    while x <= y:
-        points.extend(mid_line(center_x, center_y, center_x + x, center_y + y))
-        points.extend(mid_line(center_x, center_y, center_x + y, center_y + x))
-        points.extend(mid_line(center_x, center_y, center_x + y, center_y - x))
-        points.extend(mid_line(center_x, center_y, center_x + x, center_y - y))
-        points.extend(mid_line(center_x, center_y, center_x - x, center_y - y))
-        points.extend(mid_line(center_x, center_y, center_x - y, center_y - x))
-        points.extend(mid_line(center_x, center_y, center_x - y, center_y + x))
-        points.extend(mid_line(center_x, center_y, center_x - x, center_y + y))
+    circlePoints(x, y, x0, y0)
 
+    while x < y:
+        #print("y")
         if d < 0:
-            d += 2 * x + 3
+            # Choose East.
+            d = d + 2*x + 3
+            x += 1
         else:
-            d += 2 * (x - y) + 5
-            y -= 1
+            # Choose South East.
+            d = d + 2*x -2*y + 5
+            x += 1
+            y = y - 1
 
-        x += 1
-        
+        circlePoints(x, y, x0, y0)
+
+def draw_circle(radius, x0, y0):
+    midpointLineCircle(radius, x0, y0)        # outer circle
+
+    midpointLineCircle(radius/2, x0+radius/2, y0) # Left inner circle
+    midpointLineCircle(radius / 2, x0 - radius / 2, y0)  # right inner circle
+    midpointLineCircle(radius / 2, x0, y0 + radius/2)  # upper inner circle
+    midpointLineCircle(radius / 2, x0, y0 - radius/2)  # Lower inner circle
+
+    # This is the opposite of a right-angled triangle where the hypotenuse is radius/2.
+    # The hypotenuse is upper diagonal line in the first quadrant.
+    # We took it as half since we wanted the mid-point of the line to be the origin of the circle.
+    opposite = math.sin(math.radians(45)) * radius/2
+    # The change in x i.e. adjacent and the change in y i.e. opposite will be of the same value.
+
+    midpointLineCircle(radius/2, x0+opposite, y0+opposite)       # Right upper diagonal
+    midpointLineCircle(radius/2, x0+opposite, y0-opposite)      # Right lower diagonal
+    midpointLineCircle(radius/2, x0-opposite, y0+opposite)     # Left upper diagonal
+    midpointLineCircle(radius/2, x0-opposite, y0-opposite)    # Left lower diagonal
+
+# This function is used to draw pixels.
+def draw_points(x, y):
+    # The parameter that is passed in the function dictates the size of the pixel.
+    glPointSize(2)
+
     glBegin(GL_POINTS)
-    for point in points:
-        glVertex2f(point[0], point[1])
+
+    # Think of this as a co-ordinate. At the given x and y position the pixel will be drawn.
+    glVertex2f(x, y)
+
     glEnd()
-    glFlush()
 
 
 
-def display():
-    glClear(GL_COLOR_BUFFER_BIT)
-    glColor3f(1.0, 1.0, 1.0)  # Set color (white in this case)
-    draw_rectangle(10, 10, 100, 80)  # Example rectangle coordinates
-    draw_circle(200, 150, 50)  # Example circle parameters
-    glutSwapBuffers()
-
-def reshape(width, height):
-    glViewport(0, 0, width, height)
+def iterate():
+    glViewport(0, 0, 1000, 1000)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    glOrtho(0.0, width, 0.0, height, -1.0, 1.0)
-    glMatrixMode(GL_MODELVIEW)
+    glOrtho(0.0, 1000, 0.0, 1000, 0.0, 1.0)
+    glMatrixMode (GL_MODELVIEW)
     glLoadIdentity()
 
-def main():
-    glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
-    glutInitWindowSize(400, 300)  # Set your desired window size
-    glutCreateWindow(b"Rectangle and Circle Drawing")
-    glutDisplayFunc(display)
-    glutReshapeFunc(reshape)
-    glClearColor(0.0, 0.0, 0.0, 0.0)  # Set background color to black
-    glutMainLoop()
 
-if __name__ == "__main__":
-    main()
+def showScreen():
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glLoadIdentity()
+    iterate()
+
+    # (Red, Green, Blue)
+    glColor3f(1.0, 1.0, 1.0)
+
+    ###============================###
+    ### call_the_draw_methods_here ###
+    ###============================###
+    draw_circle(300, 500, 500)
+
+    glutSwapBuffers()
+
+
+glutInit()
+glutInitDisplayMode(GLUT_RGBA)
+
+# Size of the window.
+# Manipulating this value will let us change the size of the output widow where the pixel is shown.
+glutInitWindowSize(1000, 1000)
+
+glutInitWindowPosition(0, 0)
+
+# window name
+wind = glutCreateWindow(b"LAB03_MidpointCircle")
+
+glutDisplayFunc(showScreen)
+glutMainLoop()
