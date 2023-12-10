@@ -42,12 +42,12 @@ box_spawn_interval = 20000  # Box respawn interval in milliseconds (20 seconds)
 box_timer = None  # Timer to track the box respawn time
 
 # Function to draw a spaceship
+
 def drawSpaceship(x, y, color1, color2, facing_up=True):
     direction = 1 if facing_up else -1
     scale_factor = 0.8  # Adjust the scale factor to make the spaceship smaller
 
     def drawLine(x0, y0, x1, y1):
-        # Midpoint line algorithm
         dx = x1 - x0
         dy = y1 - y0
         d = dy - (dx / 2)
@@ -123,16 +123,41 @@ def drawSpaceship(x, y, color1, color2, facing_up=True):
 
 # Function to draw a bullet using midpoint circle algorithm with GL_POINTS
 def drawBullet(x, y, radius):
+    # num_segments = 100
+    # glBegin(GL_POINTS)
+    # glVertex2f(x, y)
+    # glEnd()
+    # glBegin(GL_POINTS)
+    # for i in range(num_segments + 1):
+    #     theta = i * (2.0 * math.pi / num_segments)
+    #     bullet_x = x + radius * math.cos(theta)
+    #     bullet_y = y + radius * math.sin(theta)
+    #     glVertex2f(bullet_x, bullet_y)
     num_segments = 100
     glBegin(GL_POINTS)
-    glVertex2f(x, y)
-    glEnd()
-    glBegin(GL_POINTS)
-    for i in range(num_segments + 1):
-        theta = i * (2.0 * math.pi / num_segments)
-        bullet_x = x + radius * math.cos(theta)
-        bullet_y = y + radius * math.sin(theta)
-        glVertex2f(bullet_x, bullet_y)
+
+    # Use midpoint circle algorithm
+    circle_center = [x, y]
+    x, y = radius, 0
+    p = 1 - radius
+
+    while x >= y:
+        glVertex2f(x + circle_center[0], y + circle_center[1])
+        glVertex2f(y + circle_center[0], x + circle_center[1])
+        glVertex2f(-x + circle_center[0], y + circle_center[1])
+        glVertex2f(-y + circle_center[0], x + circle_center[1])
+        glVertex2f(-x + circle_center[0], -y + circle_center[1])
+        glVertex2f(-y + circle_center[0], -x + circle_center[1])
+        glVertex2f(x + circle_center[0], -y + circle_center[1])
+        glVertex2f(y + circle_center[0], -x + circle_center[1])
+
+        y += 1
+
+        if p <= 0:
+            p = p + 2 * y + 1
+        else:
+            x -= 1
+            p = p + 2 * y - 2 * x + 1
     glEnd()
 
 # Function to draw a box using midpoint line algorithm
@@ -175,7 +200,7 @@ def drawMidpointLine(x0, y0, x1, y1):
 
     glBegin(GL_POINTS)
     glVertex2f(x, y)
-    for _ in range(abs(dx)):
+    for _ in range(abs(int(dx))):
         if d >= 0:
             x, y = x + xi, y + yi
             d -= 2 * abs(dx)
