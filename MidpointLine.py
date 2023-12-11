@@ -21,6 +21,10 @@ spaceship_width = 80
 spaceship_height = 20
 circle_radius = 20
 
+# Health variables
+bottom_spaceship_health = 100
+top_spaceship_health = 100
+
 # Bullet lists
 bottom_bullets = []
 top_bullets = []
@@ -218,6 +222,7 @@ def specialKeysUp(key, x, y):
 
 def check_collision():
     global bottom_bullets, top_bullets, bottom_spaceship_x, bottom_spaceship_y, top_spaceship_x, top_spaceship_y
+    global bottom_spaceship_health, top_spaceship_health
 
     # Check collision between bottom bullets and top spaceship
     for bullet in bottom_bullets:
@@ -227,6 +232,7 @@ def check_collision():
         ):
             print("Top spaceship hit")
             bottom_bullets.remove(bullet)  # Remove the bullet upon hit
+            top_spaceship_health -= 5  # Decrease top spaceship health
 
     # Check collision between top bullets and bottom spaceship
     for bullet in top_bullets:
@@ -236,6 +242,25 @@ def check_collision():
         ):
             print("Bottom spaceship hit")
             top_bullets.remove(bullet)  # Remove the bullet upon hit
+            bottom_spaceship_health -= 5  # Decrease bottom spaceship health
+
+def draw_health():
+    global bottom_spaceship_health, top_spaceship_health
+
+    glColor3f(1.0, 1.0, 1.0)  # Set color to white
+
+    # Display bottom spaceship health
+    glRasterPos2i(10, 10)
+    health_str_bottom = f"Health: {bottom_spaceship_health}"
+    for char in health_str_bottom:
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
+
+    # Display top spaceship health
+    glRasterPos2i(10, 780)
+    health_str_top = f"Health: {top_spaceship_health}"
+    for char in health_str_top:
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
+
 
 def update(frame):
     update_bullets()
@@ -257,6 +282,7 @@ def display():
     glClear(GL_COLOR_BUFFER_BIT)
     draw_spaceships()
     draw_bullets()
+    draw_health()
     glutSwapBuffers()
 
 def main():
