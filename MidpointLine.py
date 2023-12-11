@@ -25,6 +25,8 @@ circle_radius = 20
 bottom_spaceship_health = 100
 top_spaceship_health = 100
 
+
+
 # Bullet lists
 bottom_bullets = []
 top_bullets = []
@@ -130,7 +132,10 @@ def draw_bullets():
         midpointCircle(bullet_radius, bullet[0], bullet[1])
 
 def update_bullets():
-    global bottom_bullet_cooldown, top_bullet_cooldown, bottom_bullets, top_bullets
+    global bottom_bullet_cooldown, top_bullet_cooldown
+
+    if is_game_paused:
+        return  # Don't update bullets if the game is paused
 
     # Update bottom bullets
     if bottom_bullet_cooldown > 0:
@@ -141,10 +146,13 @@ def update_bullets():
         top_bullet_cooldown -= 1
 
     # Move bottom bullets
-    bottom_bullets = [(bullet[0], bullet[1] + bullet_speed) for bullet in bottom_bullets]
+    for i, bullet in enumerate(bottom_bullets):
+        bottom_bullets[i] = (bullet[0], bullet[1] + bullet_speed)
 
     # Move top bullets
-    top_bullets = [(bullet[0], bullet[1] - bullet_speed) for bullet in top_bullets]
+    for i, bullet in enumerate(top_bullets):
+        top_bullets[i] = (bullet[0], bullet[1] - bullet_speed)
+
 
 
 def update_spaceships():
@@ -161,6 +169,14 @@ def update_spaceships():
         top_spaceship_x = max(top_spaceship_x - 10, 0)
     if key_states['right']:
         top_spaceship_x = min(top_spaceship_x + 10, 800 - spaceship_width)
+
+def draw_paused():
+    glColor3f(1.0, 1.0, 1.0)  # Set color to white
+
+    glRasterPos2i(350, 400)  # Adjust the position as needed
+    paused_str = "Paused"
+    for char in paused_str:
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
 def keyboard(key, x, y):
     global key_states, bottom_bullet_cooldown, top_bullet_cooldown, is_game_paused
@@ -280,9 +296,14 @@ def reshape(w, h):
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT)
-    draw_spaceships()
-    draw_bullets()
-    draw_health()
+
+    if is_game_paused:
+        draw_paused()
+    else:
+        draw_spaceships()
+        draw_bullets()
+        draw_health()
+
     glutSwapBuffers()
 
 def main():
@@ -303,3 +324,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
