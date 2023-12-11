@@ -60,6 +60,7 @@ is_game_paused = False
 
 
 def draw_pixel(x, y):
+    glPointSize(5.0)
     glBegin(GL_POINTS)
     glVertex2i(x, y)
     glEnd()
@@ -122,7 +123,7 @@ def draw_rectangle(x1, y1, x2, y2):
 
 
 def draw_spaceships():
-    glColor3f(0.0, 0.8, 0.0)  #  green
+    glColor3f(0.0, 0.65, 0.0)  #  green
     draw_rectangle(
         bottom_spaceship_x - spaceship_width // 2,
         bottom_spaceship_y,
@@ -228,25 +229,36 @@ def restart_game():
 
 
 
-def draw_colored_button(x, y, width, height):
+def draw_button(x, y, width, height):
 
     draw_rectangle(x, y, x + width, y + height)
 
 
 def draw_icons():
+
     glColor3f(1.0, 1.0, 0.0) # yellow
-    
-    draw_colored_button(pause_button_x, pause_button_y,
+    draw_button(pause_button_x, pause_button_y,
                         button_width, button_height)
+    
+    
+
+    glPointSize(2.0)  # Set point size
+    glColor3f(1.0, 0.0, 0.0)  # Set color to red
+    drawMidpointLine(800, 800, 770, 770)
+    drawMidpointLine(770, 800, 800, 770)
+    
+    
 
     glColor3f(1.0, 0.0, 0.0) # red 
-    
-    draw_colored_button(close_button_x, close_button_y,
+    draw_button(close_button_x, close_button_y,
                         button_width, button_height)
 
     # print("Pause Button Coordinates:", pause_button_x, pause_button_y)
     # print("Close Button Coordinates:", close_button_x, close_button_y)
-
+    glPointSize(2.0)  # Set point size
+    glColor3f(1.0, 1.0, 0.0)  # Set color to red
+    drawMidpointLine(765, 800, 736, 785)
+    drawMidpointLine(736, 785, 765, 770)
 
 
 def mouse_click(button, state, x, y):
@@ -275,7 +287,7 @@ def mouse_click(button, state, x, y):
 
 
 def draw_paused():
-    glColor3f(1.0, 1.0, 1.0)  #  white
+    glColor3f(0.0, 0.0, 0.0)  #  black
 
     glRasterPos2i(225, 400)  
     paused_str = "Game Paused. Click anywhere to resume or press 'p'"
@@ -284,7 +296,7 @@ def draw_paused():
 
 
 def draw_box():
-    glColor3f(1.0, 0.0, 0.0)  #  red 
+    glColor3f(1.0, 0.0, 1.0)  #  pink 
 
     if box_position:
         draw_rectangle(
@@ -438,14 +450,14 @@ def check_collision():
 def draw_health():
     global bottom_spaceship_health, top_spaceship_health
 
-    glColor3f(1.0, 1.0, 1.0)  # white
+    glColor3f(0.0, 0.0, 0.0)  # black
 
-    glRasterPos2i(10, 10)
+    glRasterPos2i(30, 20)
     health_str_bottom = f"Health: {bottom_spaceship_health}"
     for char in health_str_bottom:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
-    glRasterPos2i(10, 780)
+    glRasterPos2i(30, 780)
     health_str_top = f"Health: {top_spaceship_health}"
     for char in health_str_top:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
@@ -490,7 +502,7 @@ def main():
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)  
     glutInitWindowSize(800, 800)
-    glutCreateWindow(b"Spaceship Game")
+    glutCreateWindow(b"1V1 SpaceShip Battle")
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(keyboard)
@@ -498,7 +510,7 @@ def main():
     glutSpecialFunc(specialKeys)  
     glutSpecialUpFunc(specialKeysUp)
     glutMouseFunc(mouse_click)  
-    glClearColor(0.0, 0.0, 0.0, 0.0)
+    glClearColor(0.53, 0.81, 0.92, 0.0)
     gluOrtho2D(0.0, 800.0, 0.0, 800.0)
     glutTimerFunc(16, update, 0)  
     glutMainLoop()
@@ -506,4 +518,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
