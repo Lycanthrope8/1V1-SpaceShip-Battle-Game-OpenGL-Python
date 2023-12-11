@@ -3,9 +3,6 @@ from OpenGL.GLUT import *
 from OpenGL.GLU import *
 import random
 
-
-game_over = False
-
 # Spaceship positions
 bottom_spaceship_x = 400
 bottom_spaceship_y = 50
@@ -24,13 +21,6 @@ spaceship_width = 80
 spaceship_height = 20
 circle_radius = 20
 
-""" # Colors
-bottom_spaceship_color = (0.0, 0.8, 0.0)  # Green
-top_spaceship_color = (0.0, 0.0, 0.8)  # Blue
-# Darker green for bottom spaceship bullets
-bottom_bullet_color = (0.2, 0.6, 0.2)
-top_bullet_color = (0.2, 0.2, 0.6)  # Darker blue for top spaceship bullets
- """
 # Health variables
 bottom_spaceship_health = 100
 top_spaceship_health = 100
@@ -46,9 +36,6 @@ box_position = None
 button_width = 30
 button_height = 30
 
-""" # Update Button Colors
-pause_button_color = (1.0, 1.0, 0.0)  # Yellow
-close_button_color = (1.0, 0.0, 0.0)  # Red """
 
 # Update Button Positions
 pause_button_x = 735
@@ -69,6 +56,7 @@ is_game_paused = False
 
 
 def draw_pixel(x, y):
+    glPointSize(5.0)
     glBegin(GL_POINTS)
     glVertex2i(x, y)
     glEnd()
@@ -131,7 +119,7 @@ def draw_rectangle(x1, y1, x2, y2):
 
 
 def draw_spaceships():
-    glColor3f(0.0, 0.8, 0.0)  # Set color to green
+    glColor3f(0.0, 0.65, 0.0)  # Set color to green
     draw_rectangle(
         bottom_spaceship_x - spaceship_width // 2,
         bottom_spaceship_y,
@@ -151,12 +139,12 @@ def draw_spaceships():
 
 
 def draw_bullets():
-    # Draw bottom bullets
+    # Drawing bottom bullets
     for bullet in bottom_bullets:
         glColor3f(0.2, 0.6, 0.2)
         midpointCircle(bullet_radius, bullet[0], bullet[1])
 
-    # Draw top bullets
+    # Drawing top bullets
     for bullet in top_bullets:
         glColor3f(0.2, 0.2, 0.6)
         midpointCircle(bullet_radius, bullet[0], bullet[1])
@@ -166,7 +154,7 @@ def update_bullets():
     global bottom_bullet_cooldown, top_bullet_cooldown
 
     if is_game_paused:
-        return  # Don't update bullets if the game is paused
+        return  
 
     # Update bottom bullets
     if bottom_bullet_cooldown > 0:
@@ -200,115 +188,80 @@ def update_spaceships():
     if key_states['right']:
         top_spaceship_x = min(top_spaceship_x + 10, 800)
 
-# Function to draw a colored button
-
-
-def check_game_over():
-    global game_over, top_spaceship_health, bottom_spaceship_health
-    if top_spaceship_health <= 0 or bottom_spaceship_health <= 0:
-        game_over = True
-
-
-def draw_game_over():
-    global top_spaceship_health, bottom_spaceship_health
-
-    # Determine the winner based on health
-    if top_spaceship_health > bottom_spaceship_health:
-        winner_str = "Top Player Wins!"
-    elif bottom_spaceship_health > top_spaceship_health:
-        winner_str = "Bottom Player Wins!"
-    else:
-        winner_str = "It's a Draw!"
-
-    glColor3f(1.0, 0.0, 0.0)  # Red color for game over text
-    glRasterPos2i(200, 400)
-    game_over_str = f"Game Over! {winner_str} Press 'r' to restart."
-    
-    # Display the game over message
-    for char in game_over_str:
-        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
 
 
-def restart_game():
-    global game_over, top_spaceship_health, bottom_spaceship_health
-    game_over = False
-    top_spaceship_health = 100
-    bottom_spaceship_health = 100
-    # Reset other game elements as needed
-
-
-def draw_colored_button(x, y, width, height):
+def draw_button(x, y, width, height):
 
     draw_rectangle(x, y, x + width, y + height)
 
 
 def draw_icons():
-    """ # Draw yellow pause button
-    draw_colored_button(pause_button_x, pause_button_y,
-                        button_width, button_height, pause_button_color) """
-
     glColor3f(1.0, 1.0, 0.0)
-    # Draw yellow pause button
-    draw_colored_button(pause_button_x, pause_button_y,
+    #pause button
+    draw_button(pause_button_x, pause_button_y,
                         button_width, button_height)
-
-    """ # Draw red close button
-    draw_colored_button(close_button_x, close_button_y,
-                        button_width, button_height, close_button_color) """
+    
+    glLineWidth(2.0) 
+    glBegin(GL_LINES)
+    glColor3f(1.0, 0.0, 0.0)
+    glVertex2f(800, 800)  
+    glVertex2f(770, 770)   
+    glVertex2f(770, 800)  
+    glVertex2f(800, 770)  
+    glEnd()  
 
     glColor3f(1.0, 0.0, 0.0)
-    # Draw red close button
-    draw_colored_button(close_button_x, close_button_y,
+    #close button
+    draw_button(close_button_x, close_button_y,
                         button_width, button_height)
-
     # print("Pause Button Coordinates:", pause_button_x, pause_button_y)
     # print("Close Button Coordinates:", close_button_x, close_button_y)
 
+    glLineWidth(2.0) 
+    glBegin(GL_LINES)
+    glColor3f(1.0, 1.0, 0.0)
+    glVertex2f(765, 800)  
+    glVertex2f(736, 785) 
+    glVertex2f(736, 785)  
+    glVertex2f(765, 770)   
+    glEnd() 
 
-# Update the mouse_click function
+
+
 def mouse_click(button, state, x, y):
     global is_game_paused
 
-    # Convert window coordinates to OpenGL coordinates
     ogl_y = 800 - y
 
     if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
         if is_game_paused:
-            # If the game is paused, clicking anywhere on the window should unpause it
             is_game_paused = False
         else:
-            # Check if the click is within the region of the pause button
             if (
                 pause_button_x <= x <= pause_button_x + button_width and
                 pause_button_y <= ogl_y <= pause_button_y + button_height
             ):
-                # Toggle pause state if the click is within the pause button area
                 is_game_paused = not is_game_paused
-
-            # Check if the click is within the region of the close button
             if (
                 close_button_x <= x <= close_button_x + button_width and
                 close_button_y <= ogl_y <= close_button_y + button_height
             ):
-                # Close the window if the click is within the close button area
                 glutLeaveMainLoop()
-
-    # Trigger a redisplay to update the screen
     glutPostRedisplay()
 
 
 def draw_paused():
-    glColor3f(1.0, 1.0, 1.0)  # Set color to white
+    glColor3f(0.0, 0.0, 0.0)  #white
 
-    glRasterPos2i(350, 400)  # Adjust the position as needed
+    glRasterPos2i(225, 400)  
     paused_str = "Game Paused. Click anywhere to resume or press 'p'"
     for char in paused_str:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
 
 def draw_box():
-    glColor3f(1.0, 0.0, 0.0)  # Set color to red for the box
+    glColor3f(1.0, 0.0, 1.0)  # pink for the box
 
     if box_position:
         draw_rectangle(
@@ -316,15 +269,14 @@ def draw_box():
             box_position[1] - box_height // 2,
             box_position[0] + box_width // 2,
             box_position[1] + box_height // 2
-        )
+        )   
 
 
 def update_box():
     global box_spawn_timer, box_position, bottom_spaceship_x, top_spaceship_x
 
     if is_game_paused:
-        return  # Don't update box if the game is paused
-
+        return  
     if box_spawn_timer <= 0:
         midpoint = (bottom_spaceship_x + top_spaceship_x) // 2
         box_position = (random.randint(midpoint - 200, midpoint + 200),
@@ -345,12 +297,12 @@ def check_collision_with_box(bullet_x, bullet_y, is_top_bullet):
             bullet_y > box_y - box_height // 2 and
             bullet_y < box_y + box_height // 2
         ):
-            # Collision with box
+            #Collision with box
             if is_top_bullet:
                 top_spaceship_health += 20
             else:
                 bottom_spaceship_health += 20
-            box_position = None  # Box disappears after being hit
+            box_position = None  #Removing the box
             return True
 
     return False
@@ -359,16 +311,12 @@ def check_collision_with_box(bullet_x, bullet_y, is_top_bullet):
 def keyboard(key, x, y):
     global key_states, bottom_bullet_cooldown, top_bullet_cooldown, is_game_paused
 
-    global game_over
     key = key.decode("utf-8")
 
-    if key == 'r' and game_over:
-        restart_game()
-
     if key == 'p':
-        is_game_paused = not is_game_paused  # Toggle pause state
-    elif key == '\x1b':  # Check for 'Escape' key
-        glutLeaveMainLoop()  # Close the window
+        is_game_paused = not is_game_paused  
+    elif key == '\x1b':  # Escape key
+        glutLeaveMainLoop()  
     elif key in key_states and not is_game_paused:
         key_states[key] = True
         if key == 'w' and bottom_bullet_cooldown == 0:
@@ -427,23 +375,19 @@ def specialKeysUp(key, x, y):
 def check_collision():
     global bottom_bullets, top_bullets, bottom_spaceship_x, bottom_spaceship_y, top_spaceship_x, top_spaceship_y
     global bottom_spaceship_health, top_spaceship_health
-    global bottom_bullets, top_bullet
 
-    # Check collision between bottom bullets and top spaceship
     for bullet in bottom_bullets:
         if (
             top_spaceship_x - spaceship_width // 2 < bullet[0] < top_spaceship_x + spaceship_width // 2 and
             top_spaceship_y - spaceship_height < bullet[1] < top_spaceship_y
         ):
             print("Top spaceship hit")
-            bottom_bullets.remove(bullet)  # Remove the bullet upon hit
-            top_spaceship_health -= 5  # Decrease top spaceship health
+            bottom_bullets.remove(bullet) 
+            top_spaceship_health -= 5  
 
-        # Check collision with box for top spaceship
         if check_collision_with_box(bullet[0], bullet[1], False):
             bottom_bullets.remove(bullet)
 
-    # Check collision between top bullets and bottom spaceship
     for bullet in top_bullets:
         if (
             bottom_spaceship_x - spaceship_width // 2 < bullet[0] < bottom_spaceship_x + spaceship_width // 2 and
@@ -451,10 +395,9 @@ def check_collision():
                 spaceship_height
         ):
             print("Bottom spaceship hit")
-            top_bullets.remove(bullet)  # Remove the bullet upon hit
-            bottom_spaceship_health -= 5  # Decrease bottom spaceship health
+            top_bullets.remove(bullet)  
+            bottom_spaceship_health -= 5  
 
-        # Check collision with box for bottom spaceship
         if check_collision_with_box(bullet[0], bullet[1], True):
             top_bullets.remove(bullet)
 
@@ -462,16 +405,12 @@ def check_collision():
 def draw_health():
     global bottom_spaceship_health, top_spaceship_health
 
-    glColor3f(1.0, 1.0, 1.0)  # Set color to white
-
-    # Display bottom spaceship health
-    glRasterPos2i(10, 10)
+    glColor3f(0.0, 0.0, 0.0)  # black
+    glRasterPos2i(30, 80)
     health_str_bottom = f"Health: {bottom_spaceship_health}"
     for char in health_str_bottom:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
-
-    # Display top spaceship health
-    glRasterPos2i(10, 780)
+    glRasterPos2i(30, 750)
     health_str_top = f"Health: {top_spaceship_health}"
     for char in health_str_top:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
@@ -481,8 +420,7 @@ def update(frame):
     update_bullets()
     update_spaceships()
     update_box()
-    check_collision()  # Check collisions after updating positions
-    check_game_over()
+    check_collision()  
     glutTimerFunc(16, update, 0)
     glutPostRedisplay()
 
@@ -498,35 +436,33 @@ def reshape(w, h):
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT)
-    if game_over:
-        draw_game_over()
-    elif is_game_paused:
+
+    if is_game_paused:
         draw_paused()
     else:
         draw_spaceships()
         draw_bullets()
-        draw_box()  # Draw the box
+        draw_box()  
         draw_health()
-        draw_icons()  # Add this line to draw buttons
-
+        draw_icons()  
     glutSwapBuffers()
 
 
 def main():
     glutInit(sys.argv)
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)  # Use double buffering
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)  
     glutInitWindowSize(800, 800)
     glutCreateWindow(b"Spaceship Game")
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(keyboard)
     glutKeyboardUpFunc(keyboard_up)
-    glutSpecialFunc(specialKeys)  # Register special function keys
+    glutSpecialFunc(specialKeys)  
     glutSpecialUpFunc(specialKeysUp)
-    glutMouseFunc(mouse_click)  # Register mouse click
-    glClearColor(0.0, 0.0, 0.0, 0.0)
+    glutMouseFunc(mouse_click) 
+    glClearColor(0.53, 0.81, 0.92, 0.0)
     gluOrtho2D(0.0, 800.0, 0.0, 800.0)
-    glutTimerFunc(16, update, 0)  # Initial call for the update function
+    glutTimerFunc(16, update, 0)  
     glutMainLoop()
 
 
