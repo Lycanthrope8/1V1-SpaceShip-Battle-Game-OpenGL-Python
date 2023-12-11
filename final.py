@@ -21,6 +21,12 @@ spaceship_width = 80
 spaceship_height = 20
 circle_radius = 20
 
+# Colors
+bottom_spaceship_color = (0.0, 0.8, 0.0)  # Green
+top_spaceship_color = (0.0, 0.0, 0.8)  # Blue
+bottom_bullet_color = (0.2, 0.6, 0.2)  # Darker green for bottom spaceship bullets
+top_bullet_color = (0.2, 0.2, 0.6)  # Darker blue for top spaceship bullets
+
 # Health variables
 bottom_spaceship_health = 100
 top_spaceship_health = 100
@@ -101,40 +107,84 @@ def draw_rectangle(x1, y1, x2, y2):
     drawMidpointLine(x1, y2, x1, y1)
 
 def draw_spaceships():
-    glColor3f(1.0, 1.0, 1.0)  # Set color to white
-
-    # Draw bottom spaceship rectangle
+    glColor3f(*bottom_spaceship_color)  # Set color to green
     draw_rectangle(
         bottom_spaceship_x - spaceship_width // 2,
         bottom_spaceship_y,
         bottom_spaceship_x + spaceship_width // 2,
         bottom_spaceship_y + spaceship_height
     )
+    midpointCircle(circle_radius, bottom_spaceship_x, bottom_spaceship_y)
 
-    # Draw top spaceship rectangle
+    glColor3f(*top_spaceship_color)  # Set color to blue
     draw_rectangle(
         top_spaceship_x - spaceship_width // 2,
         top_spaceship_y - spaceship_height,
         top_spaceship_x + spaceship_width // 2,
         top_spaceship_y
     )
-
-    # Draw bottom spaceship circle
-    midpointCircle(circle_radius, bottom_spaceship_x, bottom_spaceship_y)
-
-    # Draw top spaceship circle
     midpointCircle(circle_radius, top_spaceship_x, top_spaceship_y)
 
 def draw_bullets():
-    glColor3f(1.0, 1.0, 1.0)  # Set color to white
-
     # Draw bottom bullets
     for bullet in bottom_bullets:
+        glColor3f(*bottom_bullet_color)
         midpointCircle(bullet_radius, bullet[0], bullet[1])
 
     # Draw top bullets
     for bullet in top_bullets:
+        glColor3f(*top_bullet_color)
         midpointCircle(bullet_radius, bullet[0], bullet[1])
+
+def draw_pause_icon():
+    glColor3f(1.0, 1.0, 1.0)  # Set color to white
+
+    # Draw pause icon
+    x = 740
+    y = 795  # Adjusted the y-coordinate
+    size = 15
+
+    # Draw two vertical lines to represent the pause icon
+    drawMidpointLine(x, y, x, y - size)
+    drawMidpointLine(x + 8, y, x + 8, y - size)
+
+    return x, y - size, x + 8, y  # Return the icon region
+
+def draw_close_icon():
+    glColor3f(1.0, 1.0, 1.0)  # Set color to white
+
+    # Draw close icon
+    x = 765
+    y = 795  # Adjusted the y-coordinate
+    size = 15
+
+    # Draw an 'X' to represent the close icon
+    drawMidpointLine(x, y, x + size, y - size)
+    drawMidpointLine(x, y - size, x + size, y)
+
+    return x, y - size, x + size, y  # Return the icon region
+
+def draw_icons():
+    pause_region = draw_pause_icon()
+    close_region = draw_close_icon()
+
+    return pause_region, close_region  # Return the icon regions
+
+def mouse_click(button, state, x, y):
+    global is_game_paused
+
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        # Check if the click is within the region of the pause icon
+        pause_region = draw_pause_icon()
+        if pause_region[0] <= x <= pause_region[2] and pause_region[1] <= y <= pause_region[3]:
+            is_game_paused = not is_game_paused  # Toggle pause state
+
+        # Check if the click is within the region of the close icon
+        close_region = draw_close_icon()
+        if close_region[0] <= x <= close_region[2] and close_region[1] <= y <= close_region[3]:
+            glutLeaveMainLoop()  # Close the window
+
+
 
 def update_bullets():
     global bottom_bullet_cooldown, top_bullet_cooldown
@@ -292,6 +342,8 @@ def specialKeysUp(key, x, y):
 
     glutPostRedisplay()
 
+
+
 def check_collision():
     global bottom_bullets, top_bullets, bottom_spaceship_x, bottom_spaceship_y, top_spaceship_x, top_spaceship_y
     global bottom_spaceship_health, top_spaceship_health
@@ -369,8 +421,10 @@ def display():
         draw_bullets()
         draw_box()  # Draw the box
         draw_health()
+        draw_icons()  # Draw icons
 
     glutSwapBuffers()
+
 
 def main():
     glutInit(sys.argv)
@@ -383,6 +437,7 @@ def main():
     glutKeyboardUpFunc(keyboard_up)
     glutSpecialFunc(specialKeys)  # Register special function keys
     glutSpecialUpFunc(specialKeysUp)
+    glutMouseFunc(mouse_click)  # Register mouse click
     glClearColor(0.0, 0.0, 0.0, 0.0)
     gluOrtho2D(0.0, 800.0, 0.0, 800.0)
     glutTimerFunc(16, update, 0)  # Initial call for the update function
