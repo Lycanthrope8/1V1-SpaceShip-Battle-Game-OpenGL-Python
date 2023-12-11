@@ -167,13 +167,13 @@ def update_spaceships():
     if key_states['a']:
         bottom_spaceship_x = max(bottom_spaceship_x - 10, 0)
     if key_states['d']:
-        bottom_spaceship_x = min(bottom_spaceship_x + 10, 800 - spaceship_width)
+        bottom_spaceship_x = min(bottom_spaceship_x + 10, 800)
 
     # Move the top spaceship
     if key_states['left']:
         top_spaceship_x = max(top_spaceship_x - 10, 0)
     if key_states['right']:
-        top_spaceship_x = min(top_spaceship_x + 10, 800 - spaceship_width)
+        top_spaceship_x = min(top_spaceship_x + 10, 800)
 
 def draw_paused():
     glColor3f(1.0, 1.0, 1.0)  # Set color to white
