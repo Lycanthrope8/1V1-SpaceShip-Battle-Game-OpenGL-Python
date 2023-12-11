@@ -38,6 +38,20 @@ box_spawn_timer = 0
 box_spawn_interval = 10000  # 10 seconds in milliseconds
 box_position = None
 
+# Button properties
+button_width = 30
+button_height = 30
+
+# Update Button Colors
+pause_button_color = (1.0, 1.0, 0.0)  # Yellow
+close_button_color = (1.0, 0.0, 0.0)  # Red
+
+# Update Button Positions
+pause_button_x = 735
+pause_button_y = 770
+close_button_x = 770
+close_button_y = 770
+
 # Bullet lists
 bottom_bullets = []
 top_bullets = []
@@ -136,55 +150,6 @@ def draw_bullets():
         glColor3f(*top_bullet_color)
         midpointCircle(bullet_radius, bullet[0], bullet[1])
 
-def draw_pause_icon():
-    glColor3f(1.0, 1.0, 1.0)  # Set color to white
-
-    # Draw pause icon
-    x = 740
-    y = 795  # Adjusted the y-coordinate
-    size = 15
-
-    # Draw two vertical lines to represent the pause icon
-    drawMidpointLine(x, y, x, y - size)
-    drawMidpointLine(x + 8, y, x + 8, y - size)
-
-    return x, y - size, x + 8, y  # Return the icon region
-
-def draw_close_icon():
-    glColor3f(1.0, 1.0, 1.0)  # Set color to white
-
-    # Draw close icon
-    x = 765
-    y = 795  # Adjusted the y-coordinate
-    size = 15
-
-    # Draw an 'X' to represent the close icon
-    drawMidpointLine(x, y, x + size, y - size)
-    drawMidpointLine(x, y - size, x + size, y)
-
-    return x, y - size, x + size, y  # Return the icon region
-
-def draw_icons():
-    pause_region = draw_pause_icon()
-    close_region = draw_close_icon()
-
-    return pause_region, close_region  # Return the icon regions
-
-def mouse_click(button, state, x, y):
-    global is_game_paused
-
-    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
-        # Check if the click is within the region of the pause icon
-        pause_region = draw_pause_icon()
-        if pause_region[0] <= x <= pause_region[2] and pause_region[1] <= y <= pause_region[3]:
-            is_game_paused = not is_game_paused  # Toggle pause state
-
-        # Check if the click is within the region of the close icon
-        close_region = draw_close_icon()
-        if close_region[0] <= x <= close_region[2] and close_region[1] <= y <= close_region[3]:
-            glutLeaveMainLoop()  # Close the window
-
-
 
 def update_bullets():
     global bottom_bullet_cooldown, top_bullet_cooldown
@@ -225,11 +190,60 @@ def update_spaceships():
     if key_states['right']:
         top_spaceship_x = min(top_spaceship_x + 10, 800)
 
+# Function to draw a colored button
+def draw_colored_button(x, y, width, height, color):
+    glColor3f(*color)
+    draw_rectangle(x, y, x + width, y + height)
+
+def draw_icons():
+    # Draw yellow pause button
+    draw_colored_button(pause_button_x, pause_button_y, button_width, button_height, pause_button_color)
+
+    # Draw red close button
+    draw_colored_button(close_button_x, close_button_y, button_width, button_height, close_button_color)
+
+    # print("Pause Button Coordinates:", pause_button_x, pause_button_y)
+    # print("Close Button Coordinates:", close_button_x, close_button_y)
+
+
+# Update the mouse_click function
+def mouse_click(button, state, x, y):
+    global is_game_paused
+
+    # Convert window coordinates to OpenGL coordinates
+    ogl_y = 800 - y
+
+    if button == GLUT_LEFT_BUTTON and state == GLUT_DOWN:
+        if is_game_paused:
+            # If the game is paused, clicking anywhere on the window should unpause it
+            is_game_paused = False
+        else:
+            # Check if the click is within the region of the pause button
+            if (
+                pause_button_x <= x <= pause_button_x + button_width and
+                pause_button_y <= ogl_y <= pause_button_y + button_height
+            ):
+                # Toggle pause state if the click is within the pause button area
+                is_game_paused = not is_game_paused
+
+            # Check if the click is within the region of the close button
+            if (
+                close_button_x <= x <= close_button_x + button_width and
+                close_button_y <= ogl_y <= close_button_y + button_height
+            ):
+                # Close the window if the click is within the close button area
+                glutLeaveMainLoop()
+
+    # Trigger a redisplay to update the screen
+    glutPostRedisplay()
+
+
+
 def draw_paused():
     glColor3f(1.0, 1.0, 1.0)  # Set color to white
 
     glRasterPos2i(350, 400)  # Adjust the position as needed
-    paused_str = "Paused"
+    paused_str = "Game Paused. Click anywhere to resume or press 'p'"
     for char in paused_str:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
@@ -421,9 +435,10 @@ def display():
         draw_bullets()
         draw_box()  # Draw the box
         draw_health()
-        draw_icons()  # Draw icons
+        draw_icons()  # Add this line to draw buttons
 
     glutSwapBuffers()
+
 
 
 def main():
@@ -445,4 +460,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
