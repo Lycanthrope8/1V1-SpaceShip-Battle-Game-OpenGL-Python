@@ -37,7 +37,7 @@ box_timer = 0
 # Add these lines among your other global variables
 box_position = None
 box_size = 0.1  # Adjust the size of the box as needed
-box_health_bonus = 20  # Health bonus when hitting the box
+box_health_bonus = 20  # Adjust the bonus as needed
 box_spawn_interval = 20000  # Box respawn interval in milliseconds (20 seconds)
 box_timer = None  # Timer to track the box respawn time
 

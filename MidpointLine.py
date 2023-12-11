@@ -25,7 +25,12 @@ circle_radius = 20
 bottom_spaceship_health = 100
 top_spaceship_health = 100
 
-
+# Box properties
+box_width = 40
+box_height = 40
+box_spawn_timer = 0
+box_spawn_interval = 10000  # 10 seconds in milliseconds
+box_position = None
 
 # Bullet lists
 bottom_bullets = []
@@ -178,6 +183,57 @@ def draw_paused():
     for char in paused_str:
         glutBitmapCharacter(GLUT_BITMAP_9_BY_15, ord(char))
 
+def draw_box():
+    glColor3f(1.0, 0.0, 0.0)  # Set color to red for the box
+
+    if box_position:
+        draw_rectangle(
+            box_position[0] - box_width // 2,
+            box_position[1] - box_height // 2,
+            box_position[0] + box_width // 2,
+            box_position[1] + box_height // 2
+        )
+
+def update_box():
+    global box_spawn_timer, box_position, bottom_spaceship_x, top_spaceship_x
+
+    if is_game_paused:
+        return  # Don't update box if the game is paused
+
+    if box_spawn_timer <= 0:
+        midpoint = (bottom_spaceship_x + top_spaceship_x) // 2
+        box_position = (random.randint(midpoint - 200, midpoint + 200), random.randint(bottom_spaceship_y, top_spaceship_y))
+        box_spawn_timer = box_spawn_interval
+    else:
+        box_spawn_timer -= 16  # Decrease timer every frame (16 milliseconds)
+
+
+
+def check_collision_with_box(bullet_x, bullet_y, is_top_bullet):
+    global box_position, box_width, box_height, top_spaceship_health, bottom_spaceship_health
+
+    if box_position:
+        box_x, box_y = box_position
+        if (
+            bullet_x > box_x - box_width // 2 and
+            bullet_x < box_x + box_width // 2 and
+            bullet_y > box_y - box_height // 2 and
+            bullet_y < box_y + box_height // 2
+        ):
+            # Collision with box
+            if is_top_bullet:
+                top_spaceship_health += 20
+            else:
+                bottom_spaceship_health += 20
+            box_position = None  # Box disappears after being hit
+            return True
+
+    return False
+
+
+
+
+
 def keyboard(key, x, y):
     global key_states, bottom_bullet_cooldown, top_bullet_cooldown, is_game_paused
 
@@ -250,6 +306,10 @@ def check_collision():
             bottom_bullets.remove(bullet)  # Remove the bullet upon hit
             top_spaceship_health -= 5  # Decrease top spaceship health
 
+        # Check collision with box for top spaceship
+        if check_collision_with_box(bullet[0], bullet[1], False):
+            bottom_bullets.remove(bullet)
+
     # Check collision between top bullets and bottom spaceship
     for bullet in top_bullets:
         if (
@@ -259,6 +319,10 @@ def check_collision():
             print("Bottom spaceship hit")
             top_bullets.remove(bullet)  # Remove the bullet upon hit
             bottom_spaceship_health -= 5  # Decrease bottom spaceship health
+
+        # Check collision with box for bottom spaceship
+        if check_collision_with_box(bullet[0], bullet[1], True):
+            top_bullets.remove(bullet)
 
 def draw_health():
     global bottom_spaceship_health, top_spaceship_health
@@ -281,6 +345,7 @@ def draw_health():
 def update(frame):
     update_bullets()
     update_spaceships()
+    update_box()
     check_collision()  # Check collisions after updating positions
     glutTimerFunc(16, update, 0)
     glutPostRedisplay()
@@ -302,6 +367,7 @@ def display():
     else:
         draw_spaceships()
         draw_bullets()
+        draw_box()  # Draw the box
         draw_health()
 
     glutSwapBuffers()
