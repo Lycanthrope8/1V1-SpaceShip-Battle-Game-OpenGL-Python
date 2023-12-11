@@ -1,6 +1,7 @@
 from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
+import random
 
 # Spaceship positions
 bottom_spaceship_x = 400
@@ -23,6 +24,13 @@ circle_radius = 20
 # Bullet lists
 bottom_bullets = []
 top_bullets = []
+
+# Keyboard states
+key_states = {'a': False, 'd': False, 'left': False, 'right': False, 'w': False, 'up': False}
+
+# Pause state
+is_game_paused = False
+
 
 def draw_pixel(x, y):
     glBegin(GL_POINTS)
@@ -136,40 +144,79 @@ def update_bullets():
     for i, bullet in enumerate(top_bullets):
         top_bullets[i] = (bullet[0], bullet[1] - bullet_speed)
 
-def keyboard(key, x, y):
-    global bottom_spaceship_x, top_spaceship_x, bottom_bullet_cooldown, top_bullet_cooldown
+def update_spaceships():
+    global bottom_spaceship_x, top_spaceship_x
 
-    # Move the bottom spaceship with 'A' and 'D' keys
-    if key == b'A' or key == b'a':
+    # Move the bottom spaceship
+    if key_states['a']:
         bottom_spaceship_x = max(bottom_spaceship_x - 10, 0)
-    elif key == b'D' or key == b'd':
+    if key_states['d']:
         bottom_spaceship_x = min(bottom_spaceship_x + 10, 800 - spaceship_width)
 
-    # Move the top spaceship with left and right arrow keys
-    elif key == GLUT_KEY_LEFT:
+    # Move the top spaceship
+    if key_states['left']:
         top_spaceship_x = max(top_spaceship_x - 10, 0)
-    elif key == GLUT_KEY_RIGHT:
+    if key_states['right']:
         top_spaceship_x = min(top_spaceship_x + 10, 800 - spaceship_width)
 
-    # Fire bottom bullet with 'W' key
-    elif key == b'W' or key == b'w':
-        if bottom_bullet_cooldown == 0:
+def keyboard(key, x, y):
+    global key_states, bottom_bullet_cooldown, top_bullet_cooldown, is_game_paused
+
+    key = key.decode("utf-8")
+
+    if key == 'p':
+        is_game_paused = not is_game_paused  # Toggle pause state
+    elif key == '\x1b':  # Check for 'Escape' key
+        glutLeaveMainLoop()  # Close the window
+    elif key in key_states and not is_game_paused:
+        key_states[key] = True
+        if key == 'w' and bottom_bullet_cooldown == 0:
             bottom_bullets.append((bottom_spaceship_x, bottom_spaceship_y + spaceship_height + bullet_radius))
             bottom_bullet_cooldown = bullet_cooldown
+        elif key == 'up' and top_bullet_cooldown == 0:
+            top_bullets.append((top_spaceship_x, top_spaceship_y - spaceship_height - bullet_radius))
+            top_bullet_cooldown = bullet_cooldown
 
-    # Fire top bullet with up arrow key
-    elif key == GLUT_KEY_UP:
+    glutPostRedisplay()
+
+
+def keyboard_up(key, x, y):
+    global key_states
+
+    key = key.decode("utf-8")
+
+    if key in key_states:
+        key_states[key] = False
+
+    glutPostRedisplay()
+
+def specialKeys(key, x, y):
+    global key_states, is_game_paused, top_bullet_cooldown
+
+    if key == GLUT_KEY_LEFT and not is_game_paused:
+        key_states['left'] = True
+    elif key == GLUT_KEY_RIGHT and not is_game_paused:
+        key_states['right'] = True
+    elif key == GLUT_KEY_UP and not is_game_paused:
+        key_states['up'] = True
         if top_bullet_cooldown == 0:
             top_bullets.append((top_spaceship_x, top_spaceship_y - spaceship_height - bullet_radius))
             top_bullet_cooldown = bullet_cooldown
 
     glutPostRedisplay()
 
-def display():
-    glClear(GL_COLOR_BUFFER_BIT)
-    draw_spaceships()
-    draw_bullets()
-    glutSwapBuffers()
+def specialKeysUp(key, x, y):
+    global key_states
+
+    if key == GLUT_KEY_LEFT:
+        key_states['left'] = False
+    elif key == GLUT_KEY_RIGHT:
+        key_states['right'] = False
+    elif key == GLUT_KEY_UP:
+        key_states['up'] = False
+
+    glutPostRedisplay()
+
 
 def reshape(w, h):
     glViewport(0, 0, GLsizei(w), GLsizei(h))
@@ -181,8 +228,15 @@ def reshape(w, h):
 
 def update(frame):
     update_bullets()
+    update_spaceships()  # Add this line to update spaceship positions
     glutTimerFunc(16, update, 0)  # Update every 16 milliseconds (60 FPS)
     glutPostRedisplay()
+
+def display():
+    glClear(GL_COLOR_BUFFER_BIT)
+    draw_spaceships()
+    draw_bullets()
+    glutSwapBuffers()
 
 def main():
     glutInit(sys.argv)
@@ -192,7 +246,9 @@ def main():
     glutDisplayFunc(display)
     glutReshapeFunc(reshape)
     glutKeyboardFunc(keyboard)
-    glutSpecialFunc(keyboard)  # Register special function keys
+    glutKeyboardUpFunc(keyboard_up)
+    glutSpecialFunc(specialKeys)  # Register special function keys
+    glutSpecialUpFunc(specialKeysUp)
     glClearColor(0.0, 0.0, 0.0, 0.0)
     gluOrtho2D(0.0, 800.0, 0.0, 800.0)
     glutTimerFunc(16, update, 0)  # Initial call for the update function
