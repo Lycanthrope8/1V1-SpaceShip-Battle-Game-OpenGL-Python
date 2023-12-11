@@ -126,7 +126,7 @@ def draw_bullets():
         midpointCircle(bullet_radius, bullet[0], bullet[1])
 
 def update_bullets():
-    global bottom_bullet_cooldown, top_bullet_cooldown
+    global bottom_bullet_cooldown, top_bullet_cooldown, bottom_bullets, top_bullets
 
     # Update bottom bullets
     if bottom_bullet_cooldown > 0:
@@ -137,12 +137,11 @@ def update_bullets():
         top_bullet_cooldown -= 1
 
     # Move bottom bullets
-    for i, bullet in enumerate(bottom_bullets):
-        bottom_bullets[i] = (bullet[0], bullet[1] + bullet_speed)
+    bottom_bullets = [(bullet[0], bullet[1] + bullet_speed) for bullet in bottom_bullets]
 
     # Move top bullets
-    for i, bullet in enumerate(top_bullets):
-        top_bullets[i] = (bullet[0], bullet[1] - bullet_speed)
+    top_bullets = [(bullet[0], bullet[1] - bullet_speed) for bullet in top_bullets]
+
 
 def update_spaceships():
     global bottom_spaceship_x, top_spaceship_x
@@ -217,6 +216,33 @@ def specialKeysUp(key, x, y):
 
     glutPostRedisplay()
 
+def check_collision():
+    global bottom_bullets, top_bullets, bottom_spaceship_x, bottom_spaceship_y, top_spaceship_x, top_spaceship_y
+
+    # Check collision between bottom bullets and top spaceship
+    for bullet in bottom_bullets:
+        if (
+            top_spaceship_x - spaceship_width // 2 < bullet[0] < top_spaceship_x + spaceship_width // 2 and
+            top_spaceship_y - spaceship_height < bullet[1] < top_spaceship_y
+        ):
+            print("Top spaceship hit")
+            bottom_bullets.remove(bullet)  # Remove the bullet upon hit
+
+    # Check collision between top bullets and bottom spaceship
+    for bullet in top_bullets:
+        if (
+            bottom_spaceship_x - spaceship_width // 2 < bullet[0] < bottom_spaceship_x + spaceship_width // 2 and
+            bottom_spaceship_y < bullet[1] < bottom_spaceship_y + spaceship_height
+        ):
+            print("Bottom spaceship hit")
+            top_bullets.remove(bullet)  # Remove the bullet upon hit
+
+def update(frame):
+    update_bullets()
+    update_spaceships()
+    check_collision()  # Check collisions after updating positions
+    glutTimerFunc(16, update, 0)
+    glutPostRedisplay()
 
 def reshape(w, h):
     glViewport(0, 0, GLsizei(w), GLsizei(h))
@@ -226,11 +252,6 @@ def reshape(w, h):
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
 
-def update(frame):
-    update_bullets()
-    update_spaceships()  # Add this line to update spaceship positions
-    glutTimerFunc(16, update, 0)  # Update every 16 milliseconds (60 FPS)
-    glutPostRedisplay()
 
 def display():
     glClear(GL_COLOR_BUFFER_BIT)
