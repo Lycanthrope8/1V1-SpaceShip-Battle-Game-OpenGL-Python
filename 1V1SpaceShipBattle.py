@@ -423,7 +423,7 @@ def check_collision():
             top_spaceship_x - spaceship_width // 2 < bullet[0] < top_spaceship_x + spaceship_width // 2 and
             top_spaceship_y - spaceship_height < bullet[1] < top_spaceship_y
         ):
-            print("Top spaceship hit")
+            # print("Top spaceship hit")
             bottom_bullets.remove(bullet)  # Remove the bullet upon hit
             top_spaceship_health -= 5  # Decrease top spaceship health
 
@@ -438,7 +438,7 @@ def check_collision():
             bottom_spaceship_y < bullet[1] < bottom_spaceship_y +
                 spaceship_height
         ):
-            print("Bottom spaceship hit")
+            # print("Bottom spaceship hit")
             top_bullets.remove(bullet)  # Remove the bullet upon hit
             bottom_spaceship_health -= 5  # Decrease bottom spaceship health
 
