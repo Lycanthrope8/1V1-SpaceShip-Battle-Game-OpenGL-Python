@@ -1,3 +1,6 @@
+Certainly! I've added a line break between the links to the DX Ball and SpaceShip Battle games. Feel free to use the updated README:
+
+```markdown
 # 1V1 SpaceShip Battle
 
 Welcome to 1V1 SpaceShip Battle! This is a simple 1v1 space-themed game where two spaceships compete against each other. Your goal is to defeat your opponent by shooting bullets and strategically avoiding bullets. The game features health bars for each spaceship, and you can also gain extra health by collecting special power-ups that appear randomly on the screen.
@@ -59,16 +62,16 @@ If you encounter any issues or have suggestions for improvements, please open an
 
 Happy gaming! 🚀✨
 
-
-
 **Note:** To get the OpenGL folder with the required imports, ensure you have the PyOpenGL library installed. If you encounter any issues, visit [PyOpenGL on PyPI](https://pypi.org/project/PyOpenGL/) for detailed installation instructions.
 
 ## Find more 2D OpenGL game using Python
--[DX-BALL](https://github.com/Lycanthrope8/DX-Ball-Game-Python-OpenGL)
--[Diamond-Catcher](https://github.com/Lycanthrope8/Diamond-Catcher-Game-Python-OpenGL-)
+
+- [DX-BALL](https://github.com/Lycanthrope8/DX-Ball-Game-Python-OpenGL)
+- [Diamond-Catcher](https://github.com/Lycanthrope8/Diamond-Catcher-Game-Python-OpenGL-)
 
 ## About the Developer
+
 I am passionate about creating fun and engaging games. Check out my other projects, including the classic [DX Ball](https://github.com/Lycanthrope8/DX-Ball) and a thrilling [1v1 space shooter game](https://github.com/Lycanthrope8/Space-Shooter-1v1). Follow me on [GitHub](https://github.com/Lycanthrope8) for more exciting projects and updates.
 
 🌟 **Don't forget to follow me on GitHub for more exciting games and updates!** 🌟
-
+```
