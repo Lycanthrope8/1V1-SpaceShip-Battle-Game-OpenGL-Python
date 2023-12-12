@@ -43,9 +43,14 @@ To run the game locally, follow these steps:
    cd 1V1-SpaceShip-Battle
    ```
 
-3. Run the game:
+3. Install OpenGL in Terminal:
    ```bash
-   python main.py
+   $ pip install PyOpenGL
+   ```
+
+4. Run the game:
+   ```bash
+   python 1V1SpaceShipBattle.py
    ```
 
 ## Contributions
