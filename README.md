@@ -1,4 +1,4 @@
-# 1V1 SpaceShip Battle
+#1V1 SpaceShip Battle
 
 Welcome to 1V1 SpaceShip Battle! This is a simple 1v1 space-themed game where two spaceships compete against each other. Your goal is to defeat your opponent by shooting bullets and strategically avoiding bullets. The game features health bars for each spaceship, and you can also gain extra health by collecting special power-ups that appear randomly on the screen.
 
